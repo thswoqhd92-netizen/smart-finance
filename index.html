@@ -112,10 +112,7 @@
       <tbody class="item-group row-first">
         <tr class="item-row">
           <td data-label="NO" class="row-no" style="text-align: center;">1</td>
-          <td data-label="내용" style="text-align: left;">
-            <input type="text" class="transparent-input" value="수입 월급 통장(국민은행)" style="font-weight: bold;">
-            <textarea class="transparent-input sub-title-input" placeholder="서브 내용 입력">- 메인 수입원</textarea>
-          </td>
+          <td data-label="내용" style="text-align: left;"><input type="text" class="transparent-input" value="수입 월급 통장(국민은행)" style="font-weight: bold;"><textarea class="transparent-input sub-title-input">- 메인 수입원</textarea></td>
           <td data-label="은행"><input type="text" class="transparent-input" value="국민은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><span class="master-ratio-display" style="font-weight:bold; font-size:16px;">100</span> %</td>
           <td data-label="수입 입력"><div class="input-wrapper"><input type="text" class="input-money input-income master-income" placeholder="0" oninput="formatNumber(this); distributeIncome();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
@@ -307,7 +304,7 @@
             <label>가입한 아이디</label>
             <input type="text" id="find-pw-id-input" placeholder="아이디를 입력해 주세요" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
           </div>
-          <button class="btn btn-income" style="width:100%" onclick="executeGetHint()">힌트 질문 가져오기</button>
+          <button class="btn btn-income" id="btn-get-hint" style="width:100%" onclick="executeGetHint()">힌트 질문 가져오기</button>
         </div>
         
         <!-- STEP 2: 힌트 답변 확인 -->
@@ -316,7 +313,6 @@
             <label id="display-hint-q" style="color:#0F172A; font-size:15px; font-weight:700;">질문: ?</label>
             <input type="text" id="find-pw-hint-a" placeholder="정답을 입력해 주세요" style="margin-top:10px;" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
           </div>
-          <!-- ★ 수정: 답변 확인하는 버튼 분리 -->
           <button class="btn btn-income" style="width:100%" onclick="executeVerifyHint()">답변 확인</button>
         </div>
 
@@ -358,7 +354,6 @@
     window.onload = () => {
       initYearDropdown();
       buildMonthlyTableHeaders();
-      
       setTimeout(() => { clearLoginFields(); }, 100);
     };
 
@@ -477,6 +472,7 @@
         if(el) { el.value = ''; el.setAttribute('readonly', 'readonly'); }
       });
       
+      document.getElementById('btn-get-hint').style.display = 'block';
       document.getElementById('pw-step-2').style.display = 'none';
       document.getElementById('pw-step-3').style.display = 'none';
     }
@@ -491,7 +487,7 @@
       document.getElementById('find-' + tab + '-section').style.display = 'block';
     }
 
-    // ★ 모든 alert()를 예쁜 showAlert()로 통일
+    // ★ 모든 경고/에러 메시지를 세련된 커스텀 알림창(showAlert)으로 교체
     async function executeFindId() {
       const name = document.getElementById('find-name-input').value.trim();
       if(!name) { showAlert('안내', '이름을 입력해주세요.', false); return; }
@@ -512,13 +508,13 @@
         if(res.success) {
           currentFindIdForPw = id;
           document.getElementById('display-hint-q').innerText = `질문: ${res.hintQ}`;
+          document.getElementById('btn-get-hint').style.display = 'none'; // 질문 가져오기 버튼 숨김 (깔끔하게)
           document.getElementById('pw-step-2').style.display = 'block';
         }
         else showAlert('확인 실패', res.message, false);
       } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
-    // ★ 추가된 로직: 정답만 확인하고 다음 스텝으로 열어주기
     async function executeVerifyHint() {
       const hintA = document.getElementById('find-pw-hint-a').value.trim();
       if(!hintA) { showAlert('안내', '답변을 입력해주세요.', false); return; }
@@ -526,15 +522,14 @@
         const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "verifyHintOnly", id: currentFindIdForPw, hintA: hintA }) });
         const res = await response.json();
         if(res.success) {
-            document.getElementById('pw-step-2').style.display = 'none';
-            document.getElementById('pw-step-3').style.display = 'block';
+            document.getElementById('pw-step-2').style.display = 'none'; // 답변창 숨기고
+            document.getElementById('pw-step-3').style.display = 'block'; // 새 비번 입력창 등장
             showAlert('인증 완료', '답변이 일치합니다.\n새로운 비밀번호를 설정해 주세요.', true);
         }
-        else showAlert('인증 실패', res.message, false);
+        else showAlert('인증 실패', res.message, false); // 일치하지 않을 때 뜨는 세련된 UI 알림
       } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
-    // ★ 3단계에서 비밀번호 두 번 일치하는지 확인 후 교체
     async function executeResetPw() {
       const hintA = document.getElementById('find-pw-hint-a').value.trim();
       const newPw = document.getElementById('find-pw-new-pw').value.trim();
