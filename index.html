@@ -395,13 +395,15 @@
     let appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 43532979, target: 300000000 } };
     let currentKey = ''; 
     let isSignupMode = false;
+    
+    // ★ 핵심 추가: 현재 로그인한 아이디와 클라우드 저장 타이머
+    let currentUserId = '';       
+    let cloudSaveTimeout = null;  
 
     window.onload = () => {
       initYearDropdown();
-      loadGlobalData();
       buildMonthlyTableHeaders();
-      document.getElementById('target-amount').value = appData.wallet.target.toLocaleString('ko-KR');
-      switchMonth(); 
+      // 앱 시작 시에는 데이터 로드 안 함 (로그인 성공 후에 로드되도록 변경)
     };
 
     function toggleAuthMode() {
@@ -413,7 +415,6 @@
       document.getElementById('auth-toggle-btn').innerText = isSignupMode ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 1초만에 회원가입';
     }
 
-    // ★ 순수 웹 기반 API 통신 함수 (모바일/PC 모두 작동)
     async function handleLogin() {
       const id = document.getElementById('login-id').value.trim();
       const pw = document.getElementById('login-pw').value.trim();
@@ -449,9 +450,29 @@
                 showAlert('가입 완료', res.message, true); 
                 toggleAuthMode(); 
             } else {
+                // ★ 로그인 성공 시 로직: 누구인지 기억하고 개인 데이터 가져오기
+                currentUserId = id;
+
+                // 1. 구글 클라우드에 저장된 본인 데이터가 있으면 덮어쓰기
+                if (res.appData && res.appData !== "") {
+                    appData = JSON.parse(res.appData);
+                } else {
+                    // 2. 클라우드에 없으면 기기에 아이디별로 저장된 데이터 확인
+                    const localData = localStorage.getItem('finance_data_' + currentUserId);
+                    if (localData) {
+                        appData = JSON.parse(localData);
+                    } else {
+                        // 3. 쌩초보 신규가입자면 초기화 깡통 데이터 줌
+                        appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 43532979, target: 300000000 } };
+                    }
+                }
+
+                // 화면 전환 및 데이터 뿌려주기
                 document.getElementById('login-view').style.display = 'none';
                 document.getElementById('dashboard-view').style.display = 'block';
-                recalcFinalWallet(); 
+                document.getElementById('target-amount').value = appData.wallet.target.toLocaleString('ko-KR');
+                
+                switchMonth(); // 여기서 표 렌더링 시작
             }
         } else { 
             showAlert(isSignupMode ? '가입 실패' : '로그인 실패', res.message, false); 
@@ -464,16 +485,24 @@
       loginBtn.disabled = false;
     }
 
-    function loadGlobalData() {
-      const savedV3 = localStorage.getItem('smart_finance_data_v3');
-      if (savedV3) appData = JSON.parse(savedV3);
-      const year = document.getElementById('select-year').value;
-      if(!appData.summary[year]) appData.summary[year] = { inc: Array(12).fill(0), exp: Array(12).fill(0) };
-    }
-
+    // ★ 업그레이드된 데이터 저장 로직 (로컬 격리 + 클라우드 백업)
     function saveGlobalData() {
+      if (!currentUserId) return; // 로그인 안 되어있으면 무시
+
       appData.wallet.target = parseInt(document.getElementById('target-amount').value.replace(/,/g, '')) || 0;
-      localStorage.setItem('smart_finance_data_v3', JSON.stringify(appData));
+      
+      // 1. 기기에 해당 아이디 이름표를 달아서 즉시 저장 (A랑 B랑 안 섞임)
+      localStorage.setItem('finance_data_' + currentUserId, JSON.stringify(appData));
+
+      // 2. 구글 시트(클라우드)에 2초 뒤 조용히 자동 동기화
+      clearTimeout(cloudSaveTimeout);
+      cloudSaveTimeout = setTimeout(() => {
+        fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "saveData", id: currentUserId, appData: appData })
+        }).catch(e => console.log("Cloud sync error"));
+      }, 2000);
     }
 
     function showAlert(title, message, isSuccess = true) {
@@ -850,5 +879,3 @@
       showAlert('저장 완료', '월별 요약 내역이 성공적으로 덮어쓰기 되었습니다.');
     }
   </script>
-</body>
-</html>
