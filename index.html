@@ -172,26 +172,28 @@
 
   <!-- 로그인 화면 -->
   <div id="login-view">
+    <!-- 크롬 자동완성 교란용 가짜 폼 -->
+    <form style="display:none;"><input type="text" name="fake-id"><input type="password" name="fake-pw"></form>
+
     <div class="login-card">
       <div class="login-icon">💰</div>
       <div class="login-title" id="auth-title">스마트 재무 대시보드</div>
       <div class="login-subtitle" id="auth-subtitle">등록된 계정으로 로그인해 주세요.</div>
       
-      <!-- ★ 브라우저 자동완성 차단을 위한 readonly 꼼수 적용 -->
       <div class="input-group">
         <label>아이디</label>
-        <input type="text" id="login-id" placeholder="아이디를 입력해 주세요" readonly onfocus="this.removeAttribute('readonly');" value="">
+        <input type="text" id="login-id" placeholder="아이디를 입력해 주세요" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" value="">
       </div>
       <div class="input-group">
         <label>비밀번호</label>
-        <input type="password" id="login-pw" placeholder="비밀번호를 입력해 주세요" readonly onfocus="this.removeAttribute('readonly');" value="" onkeypress="if(event.keyCode==13) handleLogin()">
+        <input type="password" id="login-pw" placeholder="비밀번호를 입력해 주세요" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');" value="" onkeypress="if(event.keyCode==13) handleLogin()">
         <div class="find-link" id="btn-find" onclick="openFindModal()">아이디 / 비밀번호 찾기</div>
       </div>
       
       <div id="signup-extra-fields" style="display: none;">
         <div class="input-group">
           <label>이름 (회사명)</label>
-          <input type="text" id="login-name" placeholder="이름을 입력해 주세요" readonly onfocus="this.removeAttribute('readonly');" value="">
+          <input type="text" id="login-name" placeholder="이름을 입력해 주세요" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" value="">
         </div>
         <div class="input-group">
           <label>비밀번호 찾기 질문</label>
@@ -204,7 +206,7 @@
         </div>
         <div class="input-group">
           <label>비밀번호 찾기 답변</label>
-          <input type="text" id="login-hint-a" placeholder="답변을 입력해 주세요" readonly onfocus="this.removeAttribute('readonly');" value="">
+          <input type="text" id="login-hint-a" placeholder="답변을 입력해 주세요" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" value="">
         </div>
       </div>
 
@@ -291,32 +293,46 @@
       <div id="find-id-section">
         <div class="input-group">
           <label>가입 시 등록한 이름 (회사명)</label>
-          <input type="text" id="find-name-input" placeholder="이름을 입력해 주세요" readonly onfocus="this.removeAttribute('readonly');">
+          <input type="text" id="find-name-input" placeholder="이름을 입력해 주세요" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
         </div>
         <button class="btn btn-income" style="width:100%" onclick="executeFindId()">아이디 찾기</button>
       </div>
       
       <!-- 비밀번호 재설정 영역 -->
       <div id="find-pw-section" style="display: none;">
+        
+        <!-- STEP 1: 아이디 확인 -->
         <div id="pw-step-1">
           <div class="input-group">
             <label>가입한 아이디</label>
-            <input type="text" id="find-pw-id-input" placeholder="아이디를 입력해 주세요" readonly onfocus="this.removeAttribute('readonly');">
+            <input type="text" id="find-pw-id-input" placeholder="아이디를 입력해 주세요" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
           </div>
           <button class="btn btn-income" style="width:100%" onclick="executeGetHint()">힌트 질문 가져오기</button>
         </div>
         
+        <!-- STEP 2: 힌트 답변 확인 -->
         <div id="pw-step-2" style="display: none; margin-top:15px; padding-top:15px; border-top:1px dashed #E2E8F0;">
           <div class="input-group">
-            <label id="display-hint-q" style="color:#0F172A; font-size:15px;">질문: ?</label>
-            <input type="text" id="find-pw-hint-a" placeholder="답변을 입력해 주세요" style="margin-top:10px;" readonly onfocus="this.removeAttribute('readonly');">
+            <label id="display-hint-q" style="color:#0F172A; font-size:15px; font-weight:700;">질문: ?</label>
+            <input type="text" id="find-pw-hint-a" placeholder="정답을 입력해 주세요" style="margin-top:10px;" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+          </div>
+          <!-- ★ 수정: 답변 확인하는 버튼 분리 -->
+          <button class="btn btn-income" style="width:100%" onclick="executeVerifyHint()">답변 확인</button>
+        </div>
+
+        <!-- STEP 3: 새 비밀번호 2번 입력 -->
+        <div id="pw-step-3" style="display: none; margin-top:15px; padding-top:15px; border-top:1px dashed #E2E8F0;">
+          <div class="input-group">
+            <label style="color:#3B82F6;">새로운 비밀번호</label>
+            <input type="password" id="find-pw-new-pw" placeholder="새 비밀번호를 입력해 주세요" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');">
           </div>
           <div class="input-group">
-            <label>새로운 비밀번호</label>
-            <input type="password" id="find-pw-new-pw" placeholder="새 비밀번호를 입력해 주세요" readonly onfocus="this.removeAttribute('readonly');">
+            <label style="color:#3B82F6;">새로운 비밀번호 확인</label>
+            <input type="password" id="find-pw-new-pw-confirm" placeholder="새 비밀번호를 다시 입력해 주세요" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');">
           </div>
-          <button class="btn btn-income" style="width:100%" onclick="executeResetPw()">비밀번호 재설정</button>
+          <button class="btn btn-manage" style="width:100%" onclick="executeResetPw()">새 비밀번호로 변경하기</button>
         </div>
+
       </div>
     </div>
   </div>
@@ -330,7 +346,7 @@
 
   <script>
     // ★★★ 필수 수정: 앱스 크립트 URL 넣는 곳 ★★★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
+    const GAS_URL = " https://thswoqhd92-netizen.github.io/smart-finance/";
 
     let appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } }; 
     let currentKey = ''; 
@@ -343,21 +359,15 @@
       initYearDropdown();
       buildMonthlyTableHeaders();
       
-      // ★ 브라우저 자동완성 강제 초기화를 위해 0.1초 뒤에 한 번 더 비움
-      setTimeout(() => {
-        clearLoginFields();
-      }, 100);
+      setTimeout(() => { clearLoginFields(); }, 100);
     };
 
     function clearLoginFields() {
-      document.getElementById('login-id').value = '';
-      document.getElementById('login-pw').value = '';
-      document.getElementById('login-name').value = '';
-      document.getElementById('login-hint-a').value = '';
-      
-      // 혹시라도 풀려버린 readonly 속성을 다시 잠금
-      document.getElementById('login-id').setAttribute('readonly', 'readonly');
-      document.getElementById('login-pw').setAttribute('readonly', 'readonly');
+      const ids = ['login-id', 'login-pw', 'login-name', 'login-hint-a'];
+      ids.forEach(id => {
+        let el = document.getElementById(id);
+        if(el) { el.value = ''; el.setAttribute('readonly', 'readonly'); }
+      });
     }
 
     function toggleAuthMode() {
@@ -461,17 +471,14 @@
       document.getElementById('find-modal').style.display = 'flex';
       switchFindTab('id');
       
-      document.getElementById('find-name-input').value = '';
-      document.getElementById('find-pw-id-input').value = '';
-      document.getElementById('find-pw-hint-a').value = '';
-      document.getElementById('find-pw-new-pw').value = '';
-      document.getElementById('pw-step-2').style.display = 'none';
+      const ids = ['find-name-input', 'find-pw-id-input', 'find-pw-hint-a', 'find-pw-new-pw', 'find-pw-new-pw-confirm'];
+      ids.forEach(id => {
+        let el = document.getElementById(id);
+        if(el) { el.value = ''; el.setAttribute('readonly', 'readonly'); }
+      });
       
-      // 모달 열 때도 속성 잠금
-      document.getElementById('find-name-input').setAttribute('readonly', 'readonly');
-      document.getElementById('find-pw-id-input').setAttribute('readonly', 'readonly');
-      document.getElementById('find-pw-hint-a').setAttribute('readonly', 'readonly');
-      document.getElementById('find-pw-new-pw').setAttribute('readonly', 'readonly');
+      document.getElementById('pw-step-2').style.display = 'none';
+      document.getElementById('pw-step-3').style.display = 'none';
     }
 
     function switchFindTab(tab) {
@@ -484,20 +491,21 @@
       document.getElementById('find-' + tab + '-section').style.display = 'block';
     }
 
+    // ★ 모든 alert()를 예쁜 showAlert()로 통일
     async function executeFindId() {
       const name = document.getElementById('find-name-input').value.trim();
-      if(!name) { alert("이름을 입력해주세요."); return; }
+      if(!name) { showAlert('안내', '이름을 입력해주세요.', false); return; }
       try {
         const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "findId", name: name }) });
         const res = await response.json();
-        if(res.success) showAlert('아이디 찾기 성공', `회원님의 아이디는 [ ${res.id} ] 입니다.`);
-        else alert(res.message);
-      } catch(e) { alert("통신 오류 발생"); }
+        if(res.success) showAlert('아이디 찾기 성공', `회원님의 아이디는 [ ${res.id} ] 입니다.`, true);
+        else showAlert('확인 실패', res.message, false);
+      } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
     async function executeGetHint() {
       const id = document.getElementById('find-pw-id-input').value.trim();
-      if(!id) { alert("아이디를 입력해주세요."); return; }
+      if(!id) { showAlert('안내', '아이디를 입력해주세요.', false); return; }
       try {
         const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "getHintQ", id: id }) });
         const res = await response.json();
@@ -506,23 +514,44 @@
           document.getElementById('display-hint-q').innerText = `질문: ${res.hintQ}`;
           document.getElementById('pw-step-2').style.display = 'block';
         }
-        else alert(res.message);
-      } catch(e) { alert("통신 오류 발생"); }
+        else showAlert('확인 실패', res.message, false);
+      } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
+    // ★ 추가된 로직: 정답만 확인하고 다음 스텝으로 열어주기
+    async function executeVerifyHint() {
+      const hintA = document.getElementById('find-pw-hint-a').value.trim();
+      if(!hintA) { showAlert('안내', '답변을 입력해주세요.', false); return; }
+      try {
+        const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "verifyHintOnly", id: currentFindIdForPw, hintA: hintA }) });
+        const res = await response.json();
+        if(res.success) {
+            document.getElementById('pw-step-2').style.display = 'none';
+            document.getElementById('pw-step-3').style.display = 'block';
+            showAlert('인증 완료', '답변이 일치합니다.\n새로운 비밀번호를 설정해 주세요.', true);
+        }
+        else showAlert('인증 실패', res.message, false);
+      } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
+    }
+
+    // ★ 3단계에서 비밀번호 두 번 일치하는지 확인 후 교체
     async function executeResetPw() {
       const hintA = document.getElementById('find-pw-hint-a').value.trim();
       const newPw = document.getElementById('find-pw-new-pw').value.trim();
-      if(!hintA || !newPw) { alert("답변과 새 비밀번호를 모두 입력해주세요."); return; }
+      const newPwConfirm = document.getElementById('find-pw-new-pw-confirm').value.trim();
+      
+      if(!newPw || !newPwConfirm) { showAlert('안내', '새 비밀번호를 모두 입력해주세요.', false); return; }
+      if(newPw !== newPwConfirm) { showAlert('안내', '입력한 두 비밀번호가 일치하지 않습니다.\n다시 확인해 주세요.', false); return; }
+
       try {
         const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "resetPw", id: currentFindIdForPw, hintA: hintA, newPw: newPw }) });
         const res = await response.json();
         if(res.success) {
-            showAlert('비밀번호 변경 완료', res.message);
+            showAlert('비밀번호 변경 완료', res.message, true);
             closeModal('find-modal');
         }
-        else alert(res.message);
-      } catch(e) { alert("통신 오류 발생: 인터넷 연결을 확인해주세요."); }
+        else showAlert('변경 실패', res.message, false);
+      } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
     // --- 기존 재무 대시보드 로직 ---
