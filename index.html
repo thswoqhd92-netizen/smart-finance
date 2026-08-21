@@ -225,7 +225,7 @@
           </select>
         </div>
       </div>
-      <!-- ★ 추가: 우측 상단 로그인 정보 & 로그아웃 버튼 -->
+      <!-- 우측 상단 로그인 정보 & 로그아웃 버튼 -->
       <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
         <span id="display-user-id" style="font-size: 14px; font-weight: 600; color: #475569;">👤 로그인: -</span>
         <button onclick="handleLogout()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #E2E8F0; background: white; cursor:pointer; font-size:13px; font-weight:700; color:#EF4444; transition: 0.2s;">로그아웃</button>
@@ -274,7 +274,7 @@
     </div>
   </div>
 
-  <!-- 아이디/비밀번호 찾기 팝업창 -->
+  <!-- 아이디/비밀번호 찾기(재설정) 팝업창 -->
   <div class="modal-overlay" id="find-modal">
     <div class="modal-content">
       <div class="modal-close" onclick="closeModal('find-modal')">✖</div>
@@ -282,7 +282,7 @@
       
       <div class="tab-container">
         <div class="tab active" id="tab-id" onclick="switchFindTab('id')">아이디 찾기</div>
-        <div class="tab" id="tab-pw" onclick="switchFindTab('pw')">비밀번호 찾기</div>
+        <div class="tab" id="tab-pw" onclick="switchFindTab('pw')">비밀번호 변경 (재설정)</div>
       </div>
       
       <!-- 아이디 찾기 영역 -->
@@ -294,7 +294,7 @@
         <button class="btn btn-income" style="width:100%" onclick="executeFindId()">아이디 찾기</button>
       </div>
       
-      <!-- 비밀번호 찾기 영역 -->
+      <!-- 비밀번호 재설정 영역 -->
       <div id="find-pw-section" style="display: none;">
         <div id="pw-step-1">
           <div class="input-group">
@@ -309,7 +309,11 @@
             <label id="display-hint-q" style="color:#0F172A; font-size:15px;">질문: ?</label>
             <input type="text" id="find-pw-hint-a" placeholder="답변을 입력해 주세요" style="margin-top:10px;">
           </div>
-          <button class="btn btn-income" style="width:100%" onclick="executeFindPw()">비밀번호 확인</button>
+          <div class="input-group">
+            <label>새로운 비밀번호</label>
+            <input type="password" id="find-pw-new-pw" placeholder="새 비밀번호를 입력해 주세요">
+          </div>
+          <button class="btn btn-income" style="width:100%" onclick="executeResetPw()">새 비밀번호로 변경하기</button>
         </div>
       </div>
     </div>
@@ -326,7 +330,7 @@
     // ★★★ 필수 수정: 앱스 크립트 URL ★★★
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
 
-    let appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } }; // 버그 픽스: 초기자금 0원으로 수정 완료
+    let appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } }; 
     let currentKey = ''; 
     let isSignupMode = false;
     let currentUserId = '';       
@@ -338,8 +342,17 @@
       buildMonthlyTableHeaders();
     };
 
+    // ★ 입력창 초기화 로직 (로그아웃, 찾기창 열때, 모드 전환 시 깔끔하게 청소)
+    function clearLoginFields() {
+      document.getElementById('login-id').value = '';
+      document.getElementById('login-pw').value = '';
+      document.getElementById('login-name').value = '';
+      document.getElementById('login-hint-a').value = '';
+    }
+
     function toggleAuthMode() {
       isSignupMode = !isSignupMode;
+      clearLoginFields(); // ★ 모드 바꿀 때마다 싹 비워줌
       document.getElementById('signup-extra-fields').style.display = isSignupMode ? 'block' : 'none';
       document.getElementById('btn-find').style.display = isSignupMode ? 'none' : 'block';
       document.getElementById('auth-title').innerText = isSignupMode ? '회원가입 신청' : '스마트 재무 대시보드';
@@ -381,8 +394,7 @@
             } else {
                 currentUserId = id;
                 currentUserName = res.name || id;
-
-                // 클라우드 데이터 가져오기 (완전한 0원 초기화 보장)
+                
                 if (res.appData && res.appData !== "") {
                     appData = JSON.parse(res.appData);
                 } else {
@@ -390,7 +402,6 @@
                     appData = localData ? JSON.parse(localData) : { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } };
                 }
 
-                // UI 세팅
                 document.getElementById('login-view').style.display = 'none';
                 document.getElementById('dashboard-view').style.display = 'block';
                 document.getElementById('target-amount').value = appData.wallet.target.toLocaleString('ko-KR');
@@ -409,11 +420,10 @@
     }
 
     function handleLogout() {
-      saveGlobalData(); // 나가기 전에 저장 한 번 확실하게
+      saveGlobalData(); 
       currentUserId = '';
       currentUserName = '';
-      document.getElementById('login-id').value = '';
-      document.getElementById('login-pw').value = '';
+      clearLoginFields(); // ★ 로그아웃 할 때도 싹 비워줌
       document.getElementById('dashboard-view').style.display = 'none';
       document.getElementById('login-view').style.display = 'flex';
       appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } };
@@ -424,7 +434,6 @@
     function saveGlobalData() {
       if (!currentUserId) return;
       appData.wallet.target = parseInt(document.getElementById('target-amount').value.replace(/,/g, '')) || 0;
-      
       localStorage.setItem('finance_data_' + currentUserId, JSON.stringify(appData));
 
       clearTimeout(cloudSaveTimeout);
@@ -435,15 +444,18 @@
       }, 2000);
     }
 
-    // --- 찾기 기능 모달 스크립트 ---
+    // --- 찾기 및 재설정 기능 모달 스크립트 ---
     let currentFindIdForPw = '';
 
     function openFindModal() {
       document.getElementById('find-modal').style.display = 'flex';
       switchFindTab('id');
+      
+      // 모달창 열 때 기존에 쳤던 글자 청소
       document.getElementById('find-name-input').value = '';
       document.getElementById('find-pw-id-input').value = '';
       document.getElementById('find-pw-hint-a').value = '';
+      document.getElementById('find-pw-new-pw').value = '';
       document.getElementById('pw-step-2').style.display = 'none';
     }
 
@@ -483,13 +495,18 @@
       } catch(e) { alert("통신 오류 발생"); }
     }
 
-    async function executeFindPw() {
+    // ★ 새 비밀번호로 교체하는 로직
+    async function executeResetPw() {
       const hintA = document.getElementById('find-pw-hint-a').value.trim();
-      if(!hintA) { alert("답변을 입력해주세요."); return; }
+      const newPw = document.getElementById('find-pw-new-pw').value.trim();
+      if(!hintA || !newPw) { alert("답변과 새 비밀번호를 모두 입력해주세요."); return; }
       try {
-        const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "verifyHint", id: currentFindIdForPw, hintA: hintA }) });
+        const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "resetPw", id: currentFindIdForPw, hintA: hintA, newPw: newPw }) });
         const res = await response.json();
-        if(res.success) showAlert('비밀번호 찾기 성공', `회원님의 비밀번호는 [ ${res.pw} ] 입니다.`);
+        if(res.success) {
+            showAlert('비밀번호 변경 완료', res.message);
+            closeModal('find-modal');
+        }
         else alert(res.message);
       } catch(e) { alert("통신 오류 발생"); }
     }
@@ -507,7 +524,7 @@
     function formatNumber(inp) { let v = inp.value.replace(/[^0-9]/g, ''); inp.value = v === '' ? '' : parseInt(v, 10).toLocaleString('ko-KR'); saveDraft(); }
     function checkRatios() { let t = 0; document.querySelectorAll('#table-wrapper .sub-item .ratio-input').forEach(i => { let v = parseFloat(i.value); if(!isNaN(v)) t += v; }); const m = document.querySelector('#table-wrapper .master-ratio-display'); if(m) { m.innerText = t; m.style.color = (t === 100) ? '#1E293B' : '#EF4444'; } saveDraft(); }
     function distributeIncome() { const mi = document.querySelector('#table-wrapper .master-income'); if(!mi) return; const mVal = parseInt(mi.value.replace(/,/g, '')) || 0; const fr = document.querySelector('#table-wrapper .row-first .row-result'); if(fr) fr.innerText = mVal.toLocaleString('ko-KR'); document.querySelectorAll('#table-wrapper .sub-item').forEach(item => { const rVal = parseFloat(item.querySelector('.ratio-input').value) || 0; const cVal = Math.floor(mVal * (rVal / 100)); const si = item.querySelector('.sub-income'); si.value = cVal.toLocaleString('ko-KR'); si.setAttribute('value', si.value); }); calculateTempTotals(); }
-    function calculateTempTotals() { const mi = document.querySelector('#table-wrapper .master-income'); const ti = parseInt(mi ? mi.value.replace(/,/g, '') : 0) || 0; let te = 0; document.querySelectorAll('#table-wrapper .sub-item').forEach(item => { const inc = parseInt(item.querySelector('.sub-income').value.replace(/,/g, '')) || 0; const exp = parseInt(item.querySelector('.input-expense').value.replace(/,/g, '')) || 0; te += exp; let rr = inc - exp; const rs = item.querySelector('.row-result'); if(rs) { rs.innerText = rr.toLocaleString('ko-KR'); rs.style.color = rr < 0 ? '#EF4444' : (rr > 0 ? '#3B82F6' : '#94A3B8'); } }); document.getElementById('summary-month-title').innerText = `가결산 (${document.getElementById('select-month').value}월)`; const nt = ti - te; const tEl = document.getElementById('temp-month-sum'); tEl.innerText = nt.toLocaleString('ko-KR') + ' 원'; tEl.style.color = nt < 0 ? '#EF4444' : '#3B82F6'; saveDraft(); }
+    function calculateTempTotals() { const mi = document.querySelector('#table-wrapper .master-income'); const ti = parseInt(mi ? mi.value.replace(/,/g, '') : 0) || 0; let te = 0; document.querySelectorAll('#table-wrapper .sub-item').forEach(item => { const inc = parseInt(item.querySelector('.sub-income').value.replace(/,/g, '')) || 0; const exp = parseInt(item.querySelector('.input-expense').value.replace(/,/g, '')) || 0; te += exp; let rr = inc - exp; const rs = item.querySelector('.row-result'); if(rs) { rs.innerText = rr.toLocaleString('ko-KR'); rs.style.color = rr < 0 ? '#EF4444' : (rr > 0 ? '#3B82F6' : '#94A3B8'); } }); document.getElementById('summary-month-title').innerText = `상단 입력창 기준 가결산 (${document.getElementById('select-month').value}월)`; const nt = ti - te; const tEl = document.getElementById('temp-month-sum'); tEl.innerText = nt.toLocaleString('ko-KR') + ' 원'; tEl.style.color = nt < 0 ? '#EF4444' : '#3B82F6'; saveDraft(); }
     let currentInputForAdd = null;
     function openAddMoneyPrompt(btn) { currentInputForAdd = btn.previousElementSibling; document.getElementById('add-money-input').value = ''; document.getElementById('add-money-modal').style.display = 'flex'; document.getElementById('add-money-input').focus(); }
     function confirmAddMoney() { if(!currentInputForAdd) return; const av = parseInt(document.getElementById('add-money-input').value.replace(/,/g, '')) || 0; const cv = parseInt(currentInputForAdd.value.replace(/,/g, '')) || 0; currentInputForAdd.value = (cv + av).toLocaleString('ko-KR'); currentInputForAdd.setAttribute('value', currentInputForAdd.value); if(currentInputForAdd.classList.contains('master-income')) distributeIncome(); else calculateTempTotals(); closeModal('add-money-modal'); }
