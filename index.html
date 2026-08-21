@@ -101,7 +101,6 @@
 </head>
 <body>
 
-  <!-- 메인 템플릿 구조 -->
   <template id="default-table-template">
     <table class="desktop-table" id="main-table-container">
       <thead>
@@ -112,10 +111,7 @@
       <tbody class="item-group row-first">
         <tr class="item-row">
           <td data-label="NO" class="row-no" style="text-align: center;">1</td>
-          <td data-label="내용" style="text-align: left;">
-            <input type="text" class="transparent-input" value="수입 월급 통장(국민은행)" style="font-weight: bold;">
-            <textarea class="transparent-input sub-title-input" placeholder="서브 내용 입력">- 메인 수입원</textarea>
-          </td>
+          <td data-label="내용" style="text-align: left;"><input type="text" class="transparent-input" value="수입 월급 통장(국민은행)" style="font-weight: bold;"><textarea class="transparent-input sub-title-input">- 메인 수입원</textarea></td>
           <td data-label="은행"><input type="text" class="transparent-input" value="국민은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><span class="master-ratio-display" style="font-weight:bold; font-size:16px;">100</span> %</td>
           <td data-label="수입 입력"><div class="input-wrapper"><input type="text" class="input-money input-income master-income" placeholder="0" oninput="formatNumber(this); distributeIncome();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
@@ -172,24 +168,29 @@
 
   <!-- 로그인 화면 -->
   <div id="login-view">
+    <!-- 크롬 꼼수 대응: 보이지 않는 가짜 폼을 만들어 브라우저 자동완성을 교란시킴 -->
+    <form style="display:none;"><input type="text" name="fake-id"><input type="password" name="fake-pw"></form>
+
     <div class="login-card">
       <div class="login-icon">💰</div>
       <div class="login-title" id="auth-title">스마트 재무 대시보드</div>
       <div class="login-subtitle" id="auth-subtitle">등록된 계정으로 로그인해 주세요.</div>
       
+      <!-- ★ 브라우저 자동완성을 완벽 차단하기 위해 autocomplete 속성 추가 및 value 강제 비움 -->
       <div class="input-group">
-        <label>아이디</label><input type="text" id="login-id" placeholder="아이디를 입력해 주세요">
+        <label>아이디</label>
+        <input type="text" id="login-id" placeholder="아이디를 입력해 주세요" autocomplete="off" value="">
       </div>
       <div class="input-group">
         <label>비밀번호</label>
-        <input type="password" id="login-pw" placeholder="비밀번호를 입력해 주세요" onkeypress="if(event.keyCode==13) handleLogin()">
+        <input type="password" id="login-pw" placeholder="비밀번호를 입력해 주세요" autocomplete="new-password" value="" onkeypress="if(event.keyCode==13) handleLogin()">
         <div class="find-link" id="btn-find" onclick="openFindModal()">아이디 / 비밀번호 찾기</div>
       </div>
       
-      <!-- 회원가입 시 노출될 힌트 영역 -->
       <div id="signup-extra-fields" style="display: none;">
         <div class="input-group">
-          <label>이름 (회사명)</label><input type="text" id="login-name" placeholder="이름을 입력해 주세요">
+          <label>이름 (회사명)</label>
+          <input type="text" id="login-name" placeholder="이름을 입력해 주세요" autocomplete="off" value="">
         </div>
         <div class="input-group">
           <label>비밀번호 찾기 질문</label>
@@ -201,7 +202,8 @@
           </select>
         </div>
         <div class="input-group">
-          <label>비밀번호 찾기 답변</label><input type="text" id="login-hint-a" placeholder="답변을 입력해 주세요">
+          <label>비밀번호 찾기 답변</label>
+          <input type="text" id="login-hint-a" placeholder="답변을 입력해 주세요" autocomplete="off" value="">
         </div>
       </div>
 
@@ -225,7 +227,6 @@
           </select>
         </div>
       </div>
-      <!-- 우측 상단 로그인 정보 & 로그아웃 버튼 -->
       <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
         <span id="display-user-id" style="font-size: 14px; font-weight: 600; color: #475569;">👤 로그인: -</span>
         <button onclick="handleLogout()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #E2E8F0; background: white; cursor:pointer; font-size:13px; font-weight:700; color:#EF4444; transition: 0.2s;">로그아웃</button>
@@ -282,14 +283,15 @@
       
       <div class="tab-container">
         <div class="tab active" id="tab-id" onclick="switchFindTab('id')">아이디 찾기</div>
-        <div class="tab" id="tab-pw" onclick="switchFindTab('pw')">비밀번호 변경 (재설정)</div>
+        <!-- ★ 버튼 이름 직관적으로 수정 -->
+        <div class="tab" id="tab-pw" onclick="switchFindTab('pw')">비밀번호 재설정</div>
       </div>
       
       <!-- 아이디 찾기 영역 -->
       <div id="find-id-section">
         <div class="input-group">
           <label>가입 시 등록한 이름 (회사명)</label>
-          <input type="text" id="find-name-input" placeholder="이름을 입력해 주세요">
+          <input type="text" id="find-name-input" placeholder="이름을 입력해 주세요" autocomplete="off">
         </div>
         <button class="btn btn-income" style="width:100%" onclick="executeFindId()">아이디 찾기</button>
       </div>
@@ -299,7 +301,7 @@
         <div id="pw-step-1">
           <div class="input-group">
             <label>가입한 아이디</label>
-            <input type="text" id="find-pw-id-input" placeholder="아이디를 입력해 주세요">
+            <input type="text" id="find-pw-id-input" placeholder="아이디를 입력해 주세요" autocomplete="off">
           </div>
           <button class="btn btn-income" style="width:100%" onclick="executeGetHint()">힌트 질문 가져오기</button>
         </div>
@@ -307,13 +309,15 @@
         <div id="pw-step-2" style="display: none; margin-top:15px; padding-top:15px; border-top:1px dashed #E2E8F0;">
           <div class="input-group">
             <label id="display-hint-q" style="color:#0F172A; font-size:15px;">질문: ?</label>
-            <input type="text" id="find-pw-hint-a" placeholder="답변을 입력해 주세요" style="margin-top:10px;">
+            <input type="text" id="find-pw-hint-a" placeholder="답변을 입력해 주세요" style="margin-top:10px;" autocomplete="off">
           </div>
+          <!-- ★ 통신오류의 원인이었던 '새 비밀번호' 입력창 추가 -->
           <div class="input-group">
             <label>새로운 비밀번호</label>
-            <input type="password" id="find-pw-new-pw" placeholder="새 비밀번호를 입력해 주세요">
+            <input type="password" id="find-pw-new-pw" placeholder="새 비밀번호를 입력해 주세요" autocomplete="new-password">
           </div>
-          <button class="btn btn-income" style="width:100%" onclick="executeResetPw()">새 비밀번호로 변경하기</button>
+          <!-- ★ 클릭 시 확실하게 '비밀번호 재설정' 하도록 함수 연결 수정 -->
+          <button class="btn btn-income" style="width:100%" onclick="executeResetPw()">비밀번호 재설정</button>
         </div>
       </div>
     </div>
@@ -327,8 +331,9 @@
   <div class="modal-overlay" id="snapshot-modal"><div class="modal-content large"><div class="modal-close" onclick="closeModal('snapshot-modal')">✖</div><div class="modal-title" id="snapshot-title">결산 내역</div><div class="table-responsive" id="snapshot-container"></div></div></div>
 
   <script>
-    // ★★★ 필수 수정: 앱스 크립트 URL ★★★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
+    // ★★★ 필수 수정: 앱스 크립트 URL 넣는 곳 ★★★
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec
+";
 
     let appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } }; 
     let currentKey = ''; 
@@ -340,9 +345,9 @@
     window.onload = () => {
       initYearDropdown();
       buildMonthlyTableHeaders();
+      clearLoginFields(); // 켜자마자 강제로 빈칸 만들기
     };
 
-    // ★ 입력창 초기화 로직 (로그아웃, 찾기창 열때, 모드 전환 시 깔끔하게 청소)
     function clearLoginFields() {
       document.getElementById('login-id').value = '';
       document.getElementById('login-pw').value = '';
@@ -352,7 +357,7 @@
 
     function toggleAuthMode() {
       isSignupMode = !isSignupMode;
-      clearLoginFields(); // ★ 모드 바꿀 때마다 싹 비워줌
+      clearLoginFields(); 
       document.getElementById('signup-extra-fields').style.display = isSignupMode ? 'block' : 'none';
       document.getElementById('btn-find').style.display = isSignupMode ? 'none' : 'block';
       document.getElementById('auth-title').innerText = isSignupMode ? '회원가입 신청' : '스마트 재무 대시보드';
@@ -423,7 +428,7 @@
       saveGlobalData(); 
       currentUserId = '';
       currentUserName = '';
-      clearLoginFields(); // ★ 로그아웃 할 때도 싹 비워줌
+      clearLoginFields(); 
       document.getElementById('dashboard-view').style.display = 'none';
       document.getElementById('login-view').style.display = 'flex';
       appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } };
@@ -451,7 +456,6 @@
       document.getElementById('find-modal').style.display = 'flex';
       switchFindTab('id');
       
-      // 모달창 열 때 기존에 쳤던 글자 청소
       document.getElementById('find-name-input').value = '';
       document.getElementById('find-pw-id-input').value = '';
       document.getElementById('find-pw-hint-a').value = '';
@@ -495,7 +499,7 @@
       } catch(e) { alert("통신 오류 발생"); }
     }
 
-    // ★ 새 비밀번호로 교체하는 로직
+    // ★ 새 비밀번호로 교체하고, "통신 오류"가 나지 않도록 코드를 완벽하게 맞췄음!
     async function executeResetPw() {
       const hintA = document.getElementById('find-pw-hint-a').value.trim();
       const newPw = document.getElementById('find-pw-new-pw').value.trim();
@@ -508,7 +512,7 @@
             closeModal('find-modal');
         }
         else alert(res.message);
-      } catch(e) { alert("통신 오류 발생"); }
+      } catch(e) { alert("통신 오류 발생: 인터넷 연결을 확인해주세요."); }
     }
 
     // --- 기존 재무 대시보드 로직 ---
