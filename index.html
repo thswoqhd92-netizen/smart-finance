@@ -123,7 +123,7 @@
           <td data-label="은행"><input type="text" class="transparent-input" value="국민은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><span class="master-ratio-display" style="font-weight:bold; font-size:16px;">100</span> %</td>
           <td data-label="최종잔고">
-            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
             <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><div class="input-wrapper"><input type="text" class="input-money input-income master-income" placeholder="0" oninput="formatNumber(this); distributeIncome();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
@@ -138,7 +138,7 @@
           <td data-label="은행"><input type="text" class="transparent-input" value="농협은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="40" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
-            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
             <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
@@ -153,7 +153,7 @@
           <td data-label="은행"><input type="text" class="transparent-input" value="우리은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="5" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
-            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
             <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
@@ -168,7 +168,7 @@
           <td data-label="은행"><input type="text" class="transparent-input" value="기업은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="15" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
-            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
             <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
@@ -183,7 +183,7 @@
           <td data-label="은행"><input type="text" class="transparent-input" value="농협/신한 등" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="40" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
-            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
             <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
@@ -312,7 +312,6 @@
         <div class="tab" id="tab-pw" onclick="switchFindTab('pw')">비밀번호 재설정</div>
       </div>
       
-      <!-- 아이디 찾기 영역 -->
       <div id="find-id-section">
         <div class="input-group">
           <label>가입 시 등록한 이름 (회사명)</label>
@@ -321,9 +320,7 @@
         <button class="btn btn-income" style="width:100%" onclick="executeFindId()">아이디 찾기</button>
       </div>
       
-      <!-- 비밀번호 재설정 영역 -->
       <div id="find-pw-section" style="display: none;">
-        
         <div id="pw-step-1">
           <div class="input-group">
             <label>가입한 아이디</label>
@@ -351,7 +348,6 @@
           </div>
           <button class="btn btn-manage" style="width:100%" onclick="executeResetPw()">새 비밀번호로 변경하기</button>
         </div>
-
       </div>
     </div>
   </div>
@@ -365,9 +361,9 @@
 
   <script>
     // ★★★ 필수 수정: 앱스 크립트 URL 넣는 곳 ★★★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec
+";
 
-    // ★ 항목 템플릿 유지를 위해 template: null 추가
     let appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } }; 
     let currentKey = ''; 
     let isSignupMode = false;
@@ -436,6 +432,19 @@
                 
                 if (res.appData && res.appData !== "") {
                     appData = JSON.parse(res.appData);
+                    
+                    // ★ [핵심 픽스] 클라우드에 "최종잔고"가 없는 옛날 버전 표(Draft)가 있으면 싹 무시하고 초기화!
+                    let isOldVersion = false;
+                    for (let key in appData.drafts) {
+                        if (!appData.drafts[key].includes('최종잔고')) {
+                            isOldVersion = true;
+                            break;
+                        }
+                    }
+                    if (isOldVersion) {
+                        appData.drafts = {}; 
+                        appData.template = null;
+                    }
                 } else {
                     const localData = localStorage.getItem('finance_data_' + currentUserId);
                     appData = localData ? JSON.parse(localData) : { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } };
@@ -590,14 +599,12 @@
         }); 
     }
 
-    // ★ 항목 템플릿 영구 유지를 위한 저장 로직
     function saveDraft() { 
         if(!currentKey) return; 
         syncDOMValues(); 
         const currentHTML = document.getElementById('table-wrapper').innerHTML;
         appData.drafts[currentKey] = currentHTML; 
 
-        // 다음 달로 넘어갈 때 사용할 템플릿 저장 (금액들만 0으로 비움)
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = currentHTML;
         tempDiv.querySelectorAll('.master-income, .input-expense, .input-balance').forEach(inp => { inp.value = ''; inp.setAttribute('value', ''); });
@@ -608,7 +615,6 @@
         saveGlobalData(); 
     }
 
-    // ★ 월 변경 시 템플릿 불러오기 로직
     function switchMonth() { 
         if(currentKey) saveDraft(); 
         const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; 
@@ -620,7 +626,6 @@
         if(appData.drafts[currentKey]) { 
             w.innerHTML = appData.drafts[currentKey]; 
         } else if(appData.template) {
-            // 저장된 템플릿(항목구조)이 있으면 그걸 가져옴
             w.innerHTML = appData.template;
         } else { 
             w.innerHTML = document.getElementById('default-table-template').innerHTML; 
@@ -652,38 +657,32 @@
         calculateTempTotals(); 
     }
 
-    // ★ 핵심 업데이트: 최종잔고 합계 계산 및 결산 계산 로직
     function calculateTempTotals() { 
         const mi = document.querySelector('#table-wrapper .master-income'); 
         const ti = parseInt(mi ? mi.value.replace(/,/g, '') : 0) || 0; 
         let te = 0; 
 
         document.querySelectorAll('#table-wrapper .item-group').forEach(group => { 
-            // 1. 사용자 입력 '기존잔고' 값 가져오기
             const balInput = group.querySelector('.input-balance');
             const userBal = parseInt(balInput ? balInput.value.replace(/,/g, '') : 0) || 0;
 
-            // 2. 수입 값 가져오기
             let inc = 0;
             if(group.classList.contains('row-first')) {
                 inc = ti;
             } else {
                 inc = parseInt(group.querySelector('.sub-income').value.replace(/,/g, '')) || 0;
-                const expInput = group.querySelector('.input-expense');
-                const exp = parseInt(expInput ? expInput.value.replace(/,/g, '') : 0) || 0;
-                te += exp;
             }
 
-            // 3. 최종잔고 계산 = 사용자 입력값 + 수입
             const finalBal = userBal + inc;
             const fDisplay = group.querySelector('.final-balance-display');
             if(fDisplay) fDisplay.innerText = finalBal.toLocaleString('ko-KR');
 
-            // 4. 지출 값 가져오기
             const expInput = group.querySelector('.input-expense');
             const exp = parseInt(expInput ? expInput.value.replace(/,/g, '') : 0) || 0;
+            if(!group.classList.contains('row-first')) {
+                te += exp;
+            }
 
-            // 5. 결산 = 최종잔고 - 지출
             let rr = finalBal - exp;
             const rs = group.querySelector('.row-result');
             if(rs) {
@@ -704,7 +703,6 @@
     function openAddMoneyPrompt(btn) { currentInputForAdd = btn.previousElementSibling; document.getElementById('add-money-input').value = ''; document.getElementById('add-money-modal').style.display = 'flex'; document.getElementById('add-money-input').focus(); }
     function confirmAddMoney() { if(!currentInputForAdd) return; const av = parseInt(document.getElementById('add-money-input').value.replace(/,/g, '')) || 0; const cv = parseInt(currentInputForAdd.value.replace(/,/g, '')) || 0; currentInputForAdd.value = (cv + av).toLocaleString('ko-KR'); currentInputForAdd.setAttribute('value', currentInputForAdd.value); if(currentInputForAdd.classList.contains('master-income')) distributeIncome(); else calculateTempTotals(); closeModal('add-money-modal'); }
     
-    // ★ 행 추가 시 최종잔고 값도 깔끔하게 초기화되도록 수정
     function addRow() { 
         const c = document.getElementById('main-table-container'); 
         const subs = c.querySelectorAll('.sub-item'); 
