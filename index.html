@@ -101,7 +101,7 @@
 </head>
 <body>
 
-  <!-- 메인 템플릿 구조 (최종잔고 포함) -->
+  <!-- 메인 템플릿 구조 (합계: 글자 제거됨) -->
   <template id="default-table-template">
     <table class="desktop-table" id="main-table-container">
       <thead>
@@ -124,7 +124,7 @@
           <td data-label="비율(%)"><span class="master-ratio-display" style="font-weight:bold; font-size:16px;">100</span> %</td>
           <td data-label="최종잔고">
             <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
-            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;"><span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><div class="input-wrapper"><input type="text" class="input-money input-income master-income" placeholder="0" oninput="formatNumber(this); distributeIncome();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
           <td data-label="지출 입력" style="color:#CBD5E1;">-</td>
@@ -139,7 +139,7 @@
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="40" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
             <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
-            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;"><span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
@@ -154,7 +154,7 @@
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="5" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
             <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
-            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;"><span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
@@ -169,7 +169,7 @@
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="15" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
             <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
-            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;"><span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
@@ -184,7 +184,7 @@
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="40" oninput="checkRatios(); distributeIncome();"> %</td>
           <td data-label="최종잔고">
             <input type="text" class="input-money input-balance" placeholder="기존 잔고 입력" oninput="formatNumber(this); calculateTempTotals();">
-            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;"><span class="final-balance-display">0</span></div>
           </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
@@ -430,9 +430,10 @@
                 currentUserName = res.name || id;
                 
                 if (res.appData && res.appData !== "") {
-                    appData = JSON.parse(res.appData);
+                    // ★ 기존 데이터에서 "합계: " 텍스트를 깨끗하게 청소해서 불러옴!
+                    let cleanData = res.appData.replace(/합계:\s*<span/g, '<span');
+                    appData = JSON.parse(cleanData);
                     
-                    // ★ [핵심 픽스] 클라우드에 "최종잔고"가 없는 옛날 버전 표(Draft)가 있으면 싹 지워버리기!
                     let isOldVersion = false;
                     for (let key in appData.drafts) {
                         if (!appData.drafts[key].includes('최종잔고')) {
@@ -443,12 +444,16 @@
                     if (isOldVersion) {
                         appData.drafts = {}; 
                         appData.template = null;
-                        // 초기화 후 클라우드에 덮어쓰기 예약
                         saveGlobalData();
                     }
                 } else {
-                    const localData = localStorage.getItem('finance_data_' + currentUserId);
-                    appData = localData ? JSON.parse(localData) : { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } };
+                    let localData = localStorage.getItem('finance_data_' + currentUserId);
+                    if(localData) {
+                        localData = localData.replace(/합계:\s*<span/g, '<span');
+                        appData = JSON.parse(localData);
+                    } else {
+                        appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } };
+                    }
                 }
 
                 document.getElementById('login-view').style.display = 'none';
