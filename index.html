@@ -101,7 +101,7 @@
 </head>
 <body>
 
-  <!-- ★ 업데이트: 최종잔고 열이 추가된 메인 템플릿 구조 -->
+  <!-- 메인 템플릿 구조 (최종잔고 포함) -->
   <template id="default-table-template">
     <table class="desktop-table" id="main-table-container">
       <thead>
@@ -361,8 +361,7 @@
 
   <script>
     // ★★★ 필수 수정: 앱스 크립트 URL 넣는 곳 ★★★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec
-";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
 
     let appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } }; 
     let currentKey = ''; 
@@ -433,7 +432,7 @@
                 if (res.appData && res.appData !== "") {
                     appData = JSON.parse(res.appData);
                     
-                    // ★ [핵심 픽스] 클라우드에 "최종잔고"가 없는 옛날 버전 표(Draft)가 있으면 싹 무시하고 초기화!
+                    // ★ [핵심 픽스] 클라우드에 "최종잔고"가 없는 옛날 버전 표(Draft)가 있으면 싹 지워버리기!
                     let isOldVersion = false;
                     for (let key in appData.drafts) {
                         if (!appData.drafts[key].includes('최종잔고')) {
@@ -444,6 +443,8 @@
                     if (isOldVersion) {
                         appData.drafts = {}; 
                         appData.template = null;
+                        // 초기화 후 클라우드에 덮어쓰기 예약
+                        saveGlobalData();
                     }
                 } else {
                     const localData = localStorage.getItem('finance_data_' + currentUserId);
