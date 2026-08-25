@@ -101,12 +101,19 @@
 </head>
 <body>
 
-  <!-- 메인 템플릿 구조 -->
+  <!-- ★ 업데이트: 최종잔고 열이 추가된 메인 템플릿 구조 -->
   <template id="default-table-template">
     <table class="desktop-table" id="main-table-container">
       <thead>
         <tr>
-          <th width="8%">NO</th><th width="28%">내용</th><th width="12%">은행</th><th width="12%">비율(%)</th><th width="15%">수입 입력 <span style="color:#3B82F6;">(+)</span></th><th width="15%">지출 입력 <span style="color:#EF4444;">(-)</span></th><th width="10%">결산</th>
+          <th width="6%">NO</th>
+          <th width="22%">내용</th>
+          <th width="10%">은행</th>
+          <th width="10%">비율(%)</th>
+          <th width="14%">최종잔고</th>
+          <th width="14%">수입 입력 <span style="color:#3B82F6;">(+)</span></th>
+          <th width="14%">지출 입력 <span style="color:#EF4444;">(-)</span></th>
+          <th width="10%">결산</th>
         </tr>
       </thead>
       <tbody class="item-group row-first">
@@ -115,6 +122,10 @@
           <td data-label="내용" style="text-align: left;"><input type="text" class="transparent-input" value="수입 월급 통장(국민은행)" style="font-weight: bold;"><textarea class="transparent-input sub-title-input">- 메인 수입원</textarea></td>
           <td data-label="은행"><input type="text" class="transparent-input" value="국민은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><span class="master-ratio-display" style="font-weight:bold; font-size:16px;">100</span> %</td>
+          <td data-label="최종잔고">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+          </td>
           <td data-label="수입 입력"><div class="input-wrapper"><input type="text" class="input-money input-income master-income" placeholder="0" oninput="formatNumber(this); distributeIncome();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
           <td data-label="지출 입력" style="color:#CBD5E1;">-</td>
           <td data-label="결산"><span class="row-result" style="color:#3B82F6; font-weight:bold;">0</span></td>
@@ -126,6 +137,10 @@
           <td data-label="내용" style="text-align: left;"><input type="text" class="transparent-input" value="고정 지출 통장(농협은행)" style="font-weight: bold;"><textarea class="transparent-input sub-title-input">- 주거비, 생활비 등</textarea></td>
           <td data-label="은행"><input type="text" class="transparent-input" value="농협은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="40" oninput="checkRatios(); distributeIncome();"> %</td>
+          <td data-label="최종잔고">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+          </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
           <td data-label="결산"><span class="row-result" style="font-weight:bold;">0</span></td>
@@ -137,6 +152,10 @@
           <td data-label="내용" style="text-align: left;"><input type="text" class="transparent-input" value="비정기 지출 통장(우리은행)" style="font-weight: bold;"><textarea class="transparent-input sub-title-input">- 가족/부부행사/기타</textarea></td>
           <td data-label="은행"><input type="text" class="transparent-input" value="우리은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="5" oninput="checkRatios(); distributeIncome();"> %</td>
+          <td data-label="최종잔고">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+          </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
           <td data-label="결산"><span class="row-result" style="font-weight:bold;">0</span></td>
@@ -148,6 +167,10 @@
           <td data-label="내용" style="text-align: left;"><input type="text" class="transparent-input" value="예비비 통장(비상금)" style="font-weight: bold;"><textarea class="transparent-input sub-title-input">- 갑작스러운 의료비 등</textarea></td>
           <td data-label="은행"><input type="text" class="transparent-input" value="기업은행" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="15" oninput="checkRatios(); distributeIncome();"> %</td>
+          <td data-label="최종잔고">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+          </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
           <td data-label="결산"><span class="row-result" style="font-weight:bold;">0</span></td>
@@ -159,6 +182,10 @@
           <td data-label="내용" style="text-align: left;"><input type="text" class="transparent-input" value="저축 및 투자" style="font-weight: bold;"><textarea class="transparent-input sub-title-input">- 주식, 예적금 등</textarea></td>
           <td data-label="은행"><input type="text" class="transparent-input" value="농협/신한 등" style="text-align: center;"></td>
           <td data-label="비율(%)"><input type="number" class="transparent-input ratio-input" value="40" oninput="checkRatios(); distributeIncome();"> %</td>
+          <td data-label="최종잔고">
+            <input type="text" class="input-money input-balance" placeholder="기존 잔고" oninput="formatNumber(this); calculateTempTotals();">
+            <div style="font-size:11.5px; color:#3B82F6; margin-top:4px; text-align:right; font-weight:bold;">합계: <span class="final-balance-display">0</span></div>
+          </td>
           <td data-label="수입 입력"><input type="text" class="input-money input-income sub-income" placeholder="0" readonly style="background:transparent; border:none; padding-right:34px;"></td>
           <td data-label="지출 입력"><div class="input-wrapper"><input type="text" class="input-money input-expense" placeholder="0" oninput="formatNumber(this); calculateTempTotals();"><button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button></div></td>
           <td data-label="결산"><span class="row-result" style="font-weight:bold;">0</span></td>
@@ -169,7 +196,6 @@
 
   <!-- 로그인 화면 -->
   <div id="login-view">
-    <!-- 크롬 자동완성 교란용 가짜 폼 -->
     <form style="display:none;"><input type="text" name="fake-id"><input type="password" name="fake-pw"></form>
 
     <div class="login-card">
@@ -298,7 +324,6 @@
       <!-- 비밀번호 재설정 영역 -->
       <div id="find-pw-section" style="display: none;">
         
-        <!-- STEP 1: 아이디 확인 -->
         <div id="pw-step-1">
           <div class="input-group">
             <label>가입한 아이디</label>
@@ -307,7 +332,6 @@
           <button class="btn btn-income" id="btn-get-hint" style="width:100%" onclick="executeGetHint()">힌트 질문 가져오기</button>
         </div>
         
-        <!-- STEP 2: 힌트 답변 확인 -->
         <div id="pw-step-2" style="display: none; margin-top:15px; padding-top:15px; border-top:1px dashed #E2E8F0;">
           <div class="input-group">
             <label id="display-hint-q" style="color:#0F172A; font-size:15px; font-weight:700;">질문: ?</label>
@@ -316,7 +340,6 @@
           <button class="btn btn-income" style="width:100%" onclick="executeVerifyHint()">답변 확인</button>
         </div>
 
-        <!-- STEP 3: 새 비밀번호 2번 입력 -->
         <div id="pw-step-3" style="display: none; margin-top:15px; padding-top:15px; border-top:1px dashed #E2E8F0;">
           <div class="input-group">
             <label style="color:#3B82F6;">새로운 비밀번호</label>
@@ -344,7 +367,8 @@
     // ★★★ 필수 수정: 앱스 크립트 URL 넣는 곳 ★★★
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
 
-    let appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } }; 
+    // ★ 항목 템플릿 유지를 위해 template: null 추가
+    let appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } }; 
     let currentKey = ''; 
     let isSignupMode = false;
     let currentUserId = '';       
@@ -414,7 +438,7 @@
                     appData = JSON.parse(res.appData);
                 } else {
                     const localData = localStorage.getItem('finance_data_' + currentUserId);
-                    appData = localData ? JSON.parse(localData) : { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } };
+                    appData = localData ? JSON.parse(localData) : { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } };
                 }
 
                 document.getElementById('login-view').style.display = 'none';
@@ -441,7 +465,7 @@
       clearLoginFields(); 
       document.getElementById('dashboard-view').style.display = 'none';
       document.getElementById('login-view').style.display = 'flex';
-      appData = { drafts: {}, snapshots: {}, summary: {}, wallet: { base: 0, target: 300000000 } };
+      appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } };
       currentKey = '';
       document.getElementById('table-wrapper').innerHTML = ''; 
     }
@@ -459,7 +483,6 @@
       }, 2000);
     }
 
-    // --- 찾기 및 재설정 기능 모달 스크립트 ---
     let currentFindIdForPw = '';
 
     function openFindModal() {
@@ -487,7 +510,6 @@
       document.getElementById('find-' + tab + '-section').style.display = 'block';
     }
 
-    // ★ 모든 경고/에러 메시지를 세련된 커스텀 알림창(showAlert)으로 교체
     async function executeFindId() {
       const name = document.getElementById('find-name-input').value.trim();
       if(!name) { showAlert('안내', '이름을 입력해주세요.', false); return; }
@@ -508,7 +530,7 @@
         if(res.success) {
           currentFindIdForPw = id;
           document.getElementById('display-hint-q').innerText = `질문: ${res.hintQ}`;
-          document.getElementById('btn-get-hint').style.display = 'none'; // 질문 가져오기 버튼 숨김 (깔끔하게)
+          document.getElementById('btn-get-hint').style.display = 'none'; 
           document.getElementById('pw-step-2').style.display = 'block';
         }
         else showAlert('확인 실패', res.message, false);
@@ -522,11 +544,11 @@
         const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "verifyHintOnly", id: currentFindIdForPw, hintA: hintA }) });
         const res = await response.json();
         if(res.success) {
-            document.getElementById('pw-step-2').style.display = 'none'; // 답변창 숨기고
-            document.getElementById('pw-step-3').style.display = 'block'; // 새 비번 입력창 등장
+            document.getElementById('pw-step-2').style.display = 'none'; 
+            document.getElementById('pw-step-3').style.display = 'block'; 
             showAlert('인증 완료', '답변이 일치합니다.\n새로운 비밀번호를 설정해 주세요.', true);
         }
-        else showAlert('인증 실패', res.message, false); // 일치하지 않을 때 뜨는 세련된 UI 알림
+        else showAlert('인증 실패', res.message, false); 
       } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
@@ -549,24 +571,161 @@
       } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
-    // --- 기존 재무 대시보드 로직 ---
     function showAlert(title, message, isSuccess = true) { document.getElementById('alert-icon').innerText = isSuccess ? '✅' : '⚠️'; document.getElementById('alert-title').innerText = title; document.getElementById('alert-title').style.color = isSuccess ? '#166534' : '#B91C1C'; document.getElementById('alert-message').innerText = message; document.getElementById('custom-alert').style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function initYearDropdown() { const ys = document.getElementById('select-year'); ys.innerHTML = ''; for(let y = 2024; y <= 2050; y++) { let opt = document.createElement('option'); opt.value = y; opt.innerText = y + '년'; if(y === 2026) opt.selected = true; ys.appendChild(opt); } }
     function buildMonthlyTableHeaders() { let h = '<th>구분</th>', i = '<td>수입</td>', e = '<td>지출</td>'; for(let m=1; m<=12; m++) { h += `<th class="month-link" onclick="openSnapshot(${m})">${m}월<br><span style="font-size:10px; font-weight:normal; color:#94A3B8;">(내역보기)</span></th>`; i += `<td class="m-inc">0</td>`; e += `<td class="m-exp">0</td>`; } document.getElementById('monthly-headers').innerHTML = h; document.getElementById('monthly-income-row').innerHTML = i; document.getElementById('monthly-expense-row').innerHTML = e; }
-    function syncDOMValues() { const w = document.getElementById('table-wrapper'); w.querySelectorAll('input, textarea').forEach(el => { if (el.type === 'checkbox') { if (el.checked) el.setAttribute('checked', 'checked'); else el.removeAttribute('checked'); } else if (el.tagName === 'TEXTAREA') { el.innerHTML = el.value; } else { el.setAttribute('value', el.value); } }); }
-    function saveDraft() { if(!currentKey) return; syncDOMValues(); appData.drafts[currentKey] = document.getElementById('table-wrapper').innerHTML; saveGlobalData(); }
-    function switchMonth() { if(currentKey) saveDraft(); const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; currentKey = `${y}-${m}`; if(!appData.summary[y]) appData.summary[y] = { inc: Array(12).fill(0), exp: Array(12).fill(0) }; const w = document.getElementById('table-wrapper'); if(appData.drafts[currentKey]) { w.innerHTML = appData.drafts[currentKey]; } else { w.innerHTML = document.getElementById('default-table-template').innerHTML; } loadSummaryTable(y); checkRatios(); distributeIncome(); recalcFinalWallet(); }
+    
+    function syncDOMValues() { 
+        const w = document.getElementById('table-wrapper'); 
+        w.querySelectorAll('input, textarea').forEach(el => { 
+            if (el.type === 'checkbox') { 
+                if (el.checked) el.setAttribute('checked', 'checked'); 
+                else el.removeAttribute('checked'); 
+            } else if (el.tagName === 'TEXTAREA') { 
+                el.innerHTML = el.value; 
+            } else { 
+                el.setAttribute('value', el.value); 
+            } 
+        }); 
+    }
+
+    // ★ 항목 템플릿 영구 유지를 위한 저장 로직
+    function saveDraft() { 
+        if(!currentKey) return; 
+        syncDOMValues(); 
+        const currentHTML = document.getElementById('table-wrapper').innerHTML;
+        appData.drafts[currentKey] = currentHTML; 
+
+        // 다음 달로 넘어갈 때 사용할 템플릿 저장 (금액들만 0으로 비움)
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = currentHTML;
+        tempDiv.querySelectorAll('.master-income, .input-expense, .input-balance').forEach(inp => { inp.value = ''; inp.setAttribute('value', ''); });
+        tempDiv.querySelectorAll('.sub-income').forEach(inp => { inp.value = '0'; inp.setAttribute('value', '0'); });
+        tempDiv.querySelectorAll('.row-result, .final-balance-display').forEach(sp => { sp.innerText = '0'; });
+        appData.template = tempDiv.innerHTML;
+
+        saveGlobalData(); 
+    }
+
+    // ★ 월 변경 시 템플릿 불러오기 로직
+    function switchMonth() { 
+        if(currentKey) saveDraft(); 
+        const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; 
+        currentKey = `${y}-${m}`; 
+        
+        if(!appData.summary[y]) appData.summary[y] = { inc: Array(12).fill(0), exp: Array(12).fill(0) }; 
+        
+        const w = document.getElementById('table-wrapper'); 
+        if(appData.drafts[currentKey]) { 
+            w.innerHTML = appData.drafts[currentKey]; 
+        } else if(appData.template) {
+            // 저장된 템플릿(항목구조)이 있으면 그걸 가져옴
+            w.innerHTML = appData.template;
+        } else { 
+            w.innerHTML = document.getElementById('default-table-template').innerHTML; 
+        } 
+        
+        loadSummaryTable(y); 
+        checkRatios(); 
+        distributeIncome(); 
+        recalcFinalWallet(); 
+    }
+
     function loadSummaryTable(year) { const s = appData.summary[year], ic = document.querySelectorAll('#monthly-table .m-inc'), ec = document.querySelectorAll('#monthly-table .m-exp'); for(let i=0; i<12; i++) { ic[i].innerText = s.inc[i] ? s.inc[i].toLocaleString('ko-KR') : '0'; ec[i].innerText = s.exp[i] ? s.exp[i].toLocaleString('ko-KR') : '0'; } }
     function formatModalNumber(inp) { if(inp.getAttribute('inputmode') !== 'numeric' && !inp.classList.contains('input-money')) return; let v = inp.value.replace(/[^0-9]/g, ''); inp.value = v === '' ? '' : parseInt(v, 10).toLocaleString('ko-KR'); }
     function formatNumber(inp) { let v = inp.value.replace(/[^0-9]/g, ''); inp.value = v === '' ? '' : parseInt(v, 10).toLocaleString('ko-KR'); saveDraft(); }
     function checkRatios() { let t = 0; document.querySelectorAll('#table-wrapper .sub-item .ratio-input').forEach(i => { let v = parseFloat(i.value); if(!isNaN(v)) t += v; }); const m = document.querySelector('#table-wrapper .master-ratio-display'); if(m) { m.innerText = t; m.style.color = (t === 100) ? '#1E293B' : '#EF4444'; } saveDraft(); }
-    function distributeIncome() { const mi = document.querySelector('#table-wrapper .master-income'); if(!mi) return; const mVal = parseInt(mi.value.replace(/,/g, '')) || 0; const fr = document.querySelector('#table-wrapper .row-first .row-result'); if(fr) fr.innerText = mVal.toLocaleString('ko-KR'); document.querySelectorAll('#table-wrapper .sub-item').forEach(item => { const rVal = parseFloat(item.querySelector('.ratio-input').value) || 0; const cVal = Math.floor(mVal * (rVal / 100)); const si = item.querySelector('.sub-income'); si.value = cVal.toLocaleString('ko-KR'); si.setAttribute('value', si.value); }); calculateTempTotals(); }
-    function calculateTempTotals() { const mi = document.querySelector('#table-wrapper .master-income'); const ti = parseInt(mi ? mi.value.replace(/,/g, '') : 0) || 0; let te = 0; document.querySelectorAll('#table-wrapper .sub-item').forEach(item => { const inc = parseInt(item.querySelector('.sub-income').value.replace(/,/g, '')) || 0; const exp = parseInt(item.querySelector('.input-expense').value.replace(/,/g, '')) || 0; te += exp; let rr = inc - exp; const rs = item.querySelector('.row-result'); if(rs) { rs.innerText = rr.toLocaleString('ko-KR'); rs.style.color = rr < 0 ? '#EF4444' : (rr > 0 ? '#3B82F6' : '#94A3B8'); } }); document.getElementById('summary-month-title').innerText = `상단 입력창 기준 가결산 (${document.getElementById('select-month').value}월)`; const nt = ti - te; const tEl = document.getElementById('temp-month-sum'); tEl.innerText = nt.toLocaleString('ko-KR') + ' 원'; tEl.style.color = nt < 0 ? '#EF4444' : '#3B82F6'; saveDraft(); }
+    
+    function distributeIncome() { 
+        const mi = document.querySelector('#table-wrapper .master-income'); 
+        if(!mi) return; 
+        const mVal = parseInt(mi.value.replace(/,/g, '')) || 0; 
+        
+        document.querySelectorAll('#table-wrapper .sub-item').forEach(item => { 
+            const rVal = parseFloat(item.querySelector('.ratio-input').value) || 0; 
+            const cVal = Math.floor(mVal * (rVal / 100)); 
+            const si = item.querySelector('.sub-income'); 
+            si.value = cVal.toLocaleString('ko-KR'); 
+            si.setAttribute('value', si.value); 
+        }); 
+        calculateTempTotals(); 
+    }
+
+    // ★ 핵심 업데이트: 최종잔고 합계 계산 및 결산 계산 로직
+    function calculateTempTotals() { 
+        const mi = document.querySelector('#table-wrapper .master-income'); 
+        const ti = parseInt(mi ? mi.value.replace(/,/g, '') : 0) || 0; 
+        let te = 0; 
+
+        document.querySelectorAll('#table-wrapper .item-group').forEach(group => { 
+            // 1. 사용자 입력 '기존잔고' 값 가져오기
+            const balInput = group.querySelector('.input-balance');
+            const userBal = parseInt(balInput ? balInput.value.replace(/,/g, '') : 0) || 0;
+
+            // 2. 수입 값 가져오기
+            let inc = 0;
+            if(group.classList.contains('row-first')) {
+                inc = ti;
+            } else {
+                inc = parseInt(group.querySelector('.sub-income').value.replace(/,/g, '')) || 0;
+                const expInput = group.querySelector('.input-expense');
+                const exp = parseInt(expInput ? expInput.value.replace(/,/g, '') : 0) || 0;
+                te += exp;
+            }
+
+            // 3. 최종잔고 계산 = 사용자 입력값 + 수입
+            const finalBal = userBal + inc;
+            const fDisplay = group.querySelector('.final-balance-display');
+            if(fDisplay) fDisplay.innerText = finalBal.toLocaleString('ko-KR');
+
+            // 4. 지출 값 가져오기
+            const expInput = group.querySelector('.input-expense');
+            const exp = parseInt(expInput ? expInput.value.replace(/,/g, '') : 0) || 0;
+
+            // 5. 결산 = 최종잔고 - 지출
+            let rr = finalBal - exp;
+            const rs = group.querySelector('.row-result');
+            if(rs) {
+                rs.innerText = rr.toLocaleString('ko-KR');
+                rs.style.color = rr < 0 ? '#EF4444' : (rr > 0 ? '#3B82F6' : '#94A3B8');
+            }
+        }); 
+
+        document.getElementById('summary-month-title').innerText = `상단 입력창 기준 가결산 (${document.getElementById('select-month').value}월)`; 
+        const nt = ti - te; 
+        const tEl = document.getElementById('temp-month-sum'); 
+        tEl.innerText = nt.toLocaleString('ko-KR') + ' 원'; 
+        tEl.style.color = nt < 0 ? '#EF4444' : '#3B82F6'; 
+        saveDraft(); 
+    }
+
     let currentInputForAdd = null;
     function openAddMoneyPrompt(btn) { currentInputForAdd = btn.previousElementSibling; document.getElementById('add-money-input').value = ''; document.getElementById('add-money-modal').style.display = 'flex'; document.getElementById('add-money-input').focus(); }
     function confirmAddMoney() { if(!currentInputForAdd) return; const av = parseInt(document.getElementById('add-money-input').value.replace(/,/g, '')) || 0; const cv = parseInt(currentInputForAdd.value.replace(/,/g, '')) || 0; currentInputForAdd.value = (cv + av).toLocaleString('ko-KR'); currentInputForAdd.setAttribute('value', currentInputForAdd.value); if(currentInputForAdd.classList.contains('master-income')) distributeIncome(); else calculateTempTotals(); closeModal('add-money-modal'); }
-    function addRow() { const c = document.getElementById('main-table-container'); const subs = c.querySelectorAll('.sub-item'); if(subs.length === 0) return; const clo = subs[subs.length - 1].cloneNode(true); clo.querySelectorAll('input, textarea').forEach(i => { if(!i.classList.contains('sub-income')) i.removeAttribute('readonly'); if(i.type === 'checkbox') { i.checked = false; i.removeAttribute('checked'); } else if(i.classList.contains('ratio-input')) { i.value = '0'; i.setAttribute('value', '0'); } else if(i.classList.contains('input-money')) { i.value = ''; i.setAttribute('value', ''); } else { i.value = ''; i.setAttribute('value', ''); } }); clo.querySelector('.row-result').innerText = '0'; c.appendChild(clo); updateRowNumbers(); checkRatios(); distributeIncome(); }
+    
+    // ★ 행 추가 시 최종잔고 값도 깔끔하게 초기화되도록 수정
+    function addRow() { 
+        const c = document.getElementById('main-table-container'); 
+        const subs = c.querySelectorAll('.sub-item'); 
+        if(subs.length === 0) return; 
+        const clo = subs[subs.length - 1].cloneNode(true); 
+        clo.querySelectorAll('input, textarea').forEach(i => { 
+            if(!i.classList.contains('sub-income')) i.removeAttribute('readonly'); 
+            if(i.type === 'checkbox') { i.checked = false; i.removeAttribute('checked'); } 
+            else if(i.classList.contains('ratio-input')) { i.value = '0'; i.setAttribute('value', '0'); } 
+            else if(i.classList.contains('input-balance')) { i.value = ''; i.setAttribute('value', ''); } 
+            else if(i.classList.contains('input-money')) { i.value = ''; i.setAttribute('value', ''); } 
+            else { i.value = ''; i.setAttribute('value', ''); } 
+        }); 
+        clo.querySelector('.row-result').innerText = '0'; 
+        const fDisplay = clo.querySelector('.final-balance-display');
+        if(fDisplay) fDisplay.innerText = '0';
+
+        c.appendChild(clo); 
+        updateRowNumbers(); checkRatios(); distributeIncome(); 
+    }
+
     function deleteSelectedRows() { const cbs = document.querySelectorAll('#table-wrapper .row-checkbox'); let del = []; cbs.forEach(cb => { if(cb.checked) del.push(cb.closest('.sub-item')); }); if(del.length === 0) { showAlert('안내', '제거하실 항목의 좌측 체크박스를 먼저 선택해 주세요.', false); return; } const subs = document.querySelectorAll('#table-wrapper .sub-item'); if(subs.length - del.length < 1) { showAlert('경고', '최소 1개의 항목은 남아있어야 합니다.', false); return; } del.forEach(item => item.remove()); updateRowNumbers(); checkRatios(); distributeIncome(); }
     function updateRowNumbers() { document.querySelectorAll('#table-wrapper .sub-item').forEach((item, idx) => { item.querySelector('.row-no').innerText = idx + 2; }); saveDraft(); }
     function saveMonthlyData() { syncDOMValues(); const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; const k = `${y}-${m}`; appData.snapshots[k] = document.getElementById('table-wrapper').innerHTML; const ti = parseInt(document.querySelector('#table-wrapper .master-income').value.replace(/,/g, '')) || 0; let te = 0; document.querySelectorAll('#table-wrapper .sub-item .input-expense').forEach(i => { te += parseInt(i.value.replace(/,/g, '')) || 0; }); appData.summary[y].inc[parseInt(m)-1] = ti; appData.summary[y].exp[parseInt(m)-1] = te; saveGlobalData(); loadSummaryTable(y); recalcFinalWallet(); showAlert('결산 저장 완료', `${y}년 ${m}월 표에 안전하게 기록되었습니다.`); }
