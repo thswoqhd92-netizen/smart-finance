@@ -259,6 +259,7 @@
     <div class="middle-section">
       <div>
         <div class="table-actions">
+          <button class="btn-action" style="background: #3B82F6; margin-right: auto;" onclick="loadPreviousMonthBalances()">📥 이전 달 잔고 불러오기</button>
           <button class="btn-action" onclick="addRow()">+ 항목 추가</button>
           <button class="btn-action delete" onclick="deleteSelectedRows()">- 항목 제거</button>
         </div>
@@ -348,18 +349,16 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="custom-alert"><div class="modal-content" style="max-width: 350px; text-align: center;"><div class="alert-icon" id="alert-icon">✅</div><div class="modal-title" id="alert-title">알림</div><div style="font-size: 15px; color:#475569; margin-bottom: 25px; line-height: 1.5;" id="alert-message">메시지</div><button class="btn btn-income" style="width:100%" onclick="closeModal('custom-alert')">확인했습니다</button></div></div>
+  <div class="modal-overlay" id="custom-alert"><div class="modal-content" style="max-width: 350px; text-align: center;"><div class="alert-icon" id="alert-icon">✅</div><div class="modal-title" id="alert-title">알림</div><div style="font-size: 15px; color:#475569; margin-bottom: 25px; line-height: 1.5; white-space: pre-wrap;" id="alert-message">메시지</div><button class="btn btn-income" style="width:100%" onclick="closeModal('custom-alert')">확인했습니다</button></div></div>
   <div class="modal-overlay" id="add-money-modal"><div class="modal-content" style="max-width: 350px;"><div class="modal-title">금액 추가하기</div><input type="text" id="add-money-input" class="input-money" style="border: 1px solid #CBD5E1; margin-bottom: 15px;" placeholder="예: 500,000" oninput="formatModalNumber(this)"><div style="display:flex; gap:10px;"><button class="btn" style="flex:1; background:#94A3B8;" onclick="closeModal('add-money-modal')">취소</button><button class="btn btn-income" style="flex:1;" onclick="confirmAddMoney()">합산 적용하기</button></div></div></div>
   
   <div class="modal-overlay" id="wallet-modal">
     <div class="modal-content" style="max-width: 500px;">
       <div class="modal-close" onclick="closeModal('wallet-modal')">✖</div>
       <div class="modal-title">자산 합산 상세 내역</div>
-
       <div style="text-align: right; font-size: 12.5px; color: #64748B; margin-bottom: 15px; font-weight: 600;">
         * 참고: 1~12월 누적 순수익 합계: <span id="ref-accumulated" style="color: #3B82F6;">0</span> 원
       </div>
-
       <div style="background: #F8FAFC; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #E2E8F0;">
         <div style="font-size: 13px; font-weight: 700; color: #64748B; margin-bottom: 10px;">[구역 1] 이번 달 현금 흐름</div>
         <div class="modal-row" style="margin-bottom: 8px; padding-bottom: 0; border: none;">
@@ -375,7 +374,6 @@
           <div class="modal-value" id="modal-month-net" style="font-size: 15px;">0 원</div>
         </div>
       </div>
-
       <div style="background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #CBD5E1;">
         <div style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 10px;">[구역 2] 통장 결산 현황</div>
         <div class="modal-row" style="margin-bottom: 8px; padding-bottom: 0; border: none;">
@@ -391,7 +389,6 @@
           <div class="modal-value" id="modal-final-settlement" style="font-size: 18px; color: #0F172A;">0 원</div>
         </div>
       </div>
-
       <div style="background: #EFF6FF; border-radius: 12px; padding: 20px; border: 2px solid #93C5FD;">
         <div style="font-size: 16px; font-weight: 800; color: #1D4ED8; margin-bottom: 15px;">[구역 3] 최종 지갑 (총 자산)</div>
         <div class="modal-row" style="margin-bottom: 12px; padding-bottom: 0; border: none; align-items: center;">
@@ -409,7 +406,6 @@
           <div class="modal-value" id="modal-total" style="font-size: 24px; font-weight: 900; color: #1D4ED8;">0 원</div>
         </div>
       </div>
-
       <button class="btn btn-income" style="width:100%; margin-top:20px;" onclick="saveWalletModal()">저장 및 적용하기</button>
     </div>
   </div>
@@ -493,7 +489,6 @@
                     
                     let isOldVersion = false;
                     for (let key in appData.drafts) {
-                        // ★ 기존 텍스트(최종잔고)나 신규 텍스트(기존 통장잔고)가 없으면 초기화
                         if (!appData.drafts[key].includes('최종잔고') && !appData.drafts[key].includes('기존 통장잔고')) {
                             isOldVersion = true;
                             break;
@@ -695,10 +690,64 @@
             w.innerHTML = document.getElementById('default-table-template').innerHTML; 
         } 
         
+        // ★ [버그 픽스] 과거 데이터(Draft)에 남아있는 옛날 타이틀 강제 변경 로직
+        w.querySelectorAll('th, td').forEach(el => {
+            if (el.tagName === 'TH') {
+                if (el.innerText.includes('최종잔고')) el.innerText = '기존 통장잔고';
+                if (el.innerText.trim() === '결산') el.innerText = '최종 통장잔고';
+            } else if (el.tagName === 'TD') {
+                if (el.getAttribute('data-label') === '최종잔고') el.setAttribute('data-label', '기존 통장잔고');
+                if (el.getAttribute('data-label') === '결산') el.setAttribute('data-label', '최종 통장잔고');
+            }
+        });
+
         loadSummaryTable(y); 
         checkRatios(); 
         distributeIncome(); 
         recalcFinalWallet(); 
+    }
+
+    // ★ 새로 추가된 [이전 달 데이터 불러오기] 함수
+    function loadPreviousMonthBalances() {
+        const y = parseInt(document.getElementById('select-year').value);
+        const m = parseInt(document.getElementById('select-month').value);
+
+        let prevY = y;
+        let prevM = m - 1;
+        if (prevM === 0) {
+            prevY = y - 1;
+            prevM = 12;
+        }
+        const prevKey = `${prevY}-${prevM}`;
+
+        let prevHTML = appData.drafts[prevKey] || appData.snapshots[prevKey];
+        if (!prevHTML) {
+            showAlert('안내', `${prevY}년 ${prevM}월의 저장된 데이터가 없습니다.\n먼저 이전 달의 데이터를 작성해 주세요.`, false);
+            return;
+        }
+
+        // 임시 DOM을 만들어 이전 달 HTML 데이터를 파싱
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = prevHTML;
+
+        const prevResults = tempDiv.querySelectorAll('.row-result');
+        const currBalances = document.querySelectorAll('#table-wrapper .input-balance');
+
+        if (prevResults.length === 0) {
+             showAlert('안내', '이전 달 데이터에서 잔고를 찾을 수 없습니다.', false);
+             return;
+        }
+
+        // 항목(Row)별로 이전 달의 '최종 통장잔고'를 현재 달의 '기존 통장잔고'로 삽입
+        currBalances.forEach((balInput, idx) => {
+            if (prevResults[idx]) {
+                balInput.value = prevResults[idx].innerText;
+                balInput.setAttribute('value', balInput.value);
+            }
+        });
+
+        calculateTempTotals();
+        showAlert('불러오기 완료', `${prevY}년 ${prevM}월의 '최종 통장잔고' 데이터를\n현재 달의 '기존 통장잔고'로 성공적으로 가져왔습니다.`);
     }
 
     function loadSummaryTable(year) { const s = appData.summary[year], ic = document.querySelectorAll('#monthly-table .m-inc'), ec = document.querySelectorAll('#monthly-table .m-exp'); for(let i=0; i<12; i++) { ic[i].innerText = s.inc[i] ? s.inc[i].toLocaleString('ko-KR') : '0'; ec[i].innerText = s.exp[i] ? s.exp[i].toLocaleString('ko-KR') : '0'; } }
@@ -761,7 +810,6 @@
         tEl.innerText = nt.toLocaleString('ko-KR') + ' 원'; 
         tEl.style.color = nt < 0 ? '#EF4444' : '#3B82F6'; 
         
-        // ★ 실시간으로 총 지갑 자산 업데이트 반영
         recalcFinalWallet(); 
         saveDraft(); 
     }
@@ -797,7 +845,6 @@
     function openSnapshot(m) { const y = document.getElementById('select-year').value; const k = `${y}-${m}`; if(!appData.snapshots[k]) { showAlert('안내', '저장된 결산 내역이 없습니다.', false); return; } document.getElementById('snapshot-title').innerText = `${y}년 ${m}월 결산 내역`; document.getElementById('snapshot-container').innerHTML = appData.snapshots[k]; document.getElementById('snapshot-modal').style.display = 'flex'; }
     function updateTargetPercent(fVal) { const ft = fVal !== undefined ? fVal : parseInt(document.getElementById('final-wallet-display').innerText.replace(/,/g, '')) || 0; const tg = parseInt(document.getElementById('target-amount').value.replace(/,/g, '')) || 1; let p = (ft / tg) * 100; if (p < 0) p = 0; if (p > 100) p = 100; document.getElementById('progress-bar').style.width = p + '%'; document.getElementById('progress-text').innerText = p.toFixed(1) + '% 달성!'; }
     
-    // ★ 새로 추가된 공통 현재 입력값 추출 함수
     function getTableCurrentValues() {
         let ti = parseInt(document.querySelector('#table-wrapper .master-income')?.value.replace(/,/g, '')) || 0;
         let te = 0;
@@ -811,20 +858,16 @@
         return { ti, te, totalBaseBal };
     }
 
-    // ★ 메인 화면 자산 합계 계산 방식 변경 (초기자본금 + 통장잔고 합 + 당월수익)
     function recalcFinalWallet() { 
-        // 1~12월 누적 수익 (참고용으로만 리턴)
         let a = 0; 
         const y = document.getElementById('select-year').value; 
         const s = appData.summary[y] || { inc:[], exp:[] }; 
         for(let i=0; i<12; i++) { a += (s.inc[i] || 0) - (s.exp[i] || 0); } 
 
-        // 현재 표 내용 계산
         const { ti, te, totalBaseBal } = getTableCurrentValues();
         const currentNet = ti - te;
         const finalSettlement = totalBaseBal + currentNet;
 
-        // 최종 총 지갑 금액 (초기자본금 + 현재화면 결산액)
         const ft = appData.wallet.base + finalSettlement; 
 
         document.getElementById('final-wallet-display').innerText = ft.toLocaleString('ko-KR') + ' 원'; 
@@ -832,7 +875,6 @@
         return a; 
     }
 
-    // ★ 팝업 내 계산 로직
     function calcModalWallet() { 
         const b = parseInt(document.getElementById('base-wallet-input').value.replace(/,/g, '')) || 0; 
         const { ti, te, totalBaseBal } = getTableCurrentValues();
@@ -842,29 +884,24 @@
         document.getElementById('modal-total').innerText = (b + finalSettlement).toLocaleString('ko-KR') + ' 원'; 
     }
 
-    // ★ 새로운 폭포수 UI 열기 함수
     function openWalletModal() { 
-        const a = recalcFinalWallet(); // 1~12월 누적 합계 불러오기
+        const a = recalcFinalWallet(); 
         const { ti, te, totalBaseBal } = getTableCurrentValues();
         const currentNet = ti - te;
         const finalSettlement = totalBaseBal + currentNet;
 
-        // 참고용 1~12월 수익 세팅
         document.getElementById('ref-accumulated').innerText = a.toLocaleString('ko-KR'); 
 
-        // 구역 1 세팅
         document.getElementById('modal-month-income').innerText = ti.toLocaleString('ko-KR') + ' 원';
         document.getElementById('modal-month-expense').innerText = te.toLocaleString('ko-KR') + ' 원';
         document.getElementById('modal-month-net').innerText = currentNet.toLocaleString('ko-KR') + ' 원';
         document.getElementById('modal-month-net').style.color = currentNet < 0 ? '#EF4444' : '#3B82F6';
 
-        // 구역 2 세팅
         document.getElementById('modal-base-balance').innerText = totalBaseBal.toLocaleString('ko-KR') + ' 원';
         document.getElementById('modal-month-net-ref').innerText = currentNet.toLocaleString('ko-KR') + ' 원';
         document.getElementById('modal-month-net-ref').style.color = currentNet < 0 ? '#EF4444' : '#3B82F6';
         document.getElementById('modal-final-settlement').innerText = finalSettlement.toLocaleString('ko-KR') + ' 원';
 
-        // 구역 3 세팅
         document.getElementById('base-wallet-input').value = appData.wallet.base.toLocaleString('ko-KR'); 
         document.getElementById('modal-final-settlement-ref').innerText = finalSettlement.toLocaleString('ko-KR') + ' 원';
 
