@@ -57,14 +57,15 @@
     .btn-add-money { background: #E2E8F0; color: #475569; border: none; border-radius: 6px; width: 28px; height: 28px; font-weight: 800; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
     .no-container { display: flex; align-items: center; justify-content: center; height: 100%; gap: 8px; }
     
-    .tooltip-container { position: relative; display: inline-flex; align-items: center; margin-left: 6px; cursor: pointer; }
-    .tooltip-icon { font-size: 18px; opacity: 0.8; transition: 0.2s; }
+    /* ★ 툴팁 디자인 업데이트 (크기 축소 및 위치 조정) */
+    .tooltip-container { position: relative; display: inline-flex; align-items: center; margin-left: 4px; cursor: pointer; vertical-align: middle; }
+    .tooltip-icon { font-size: 14px; opacity: 0.8; transition: 0.2s; }
     .tooltip-container:hover .tooltip-icon { opacity: 1; }
     .tooltip-content {
       visibility: hidden; opacity: 0; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%) translateY(10px);
-      background: #333D4B; color: #FFF; font-size: 13px; font-weight: 600; padding: 12px 16px; border-radius: 12px;
+      background: #333D4B; color: #FFF; font-size: 11.5px; font-weight: 500; padding: 8px 12px; border-radius: 8px;
       white-space: pre-wrap; text-align: center; line-height: 1.4; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: 0.3s ease; z-index: 100;
-      min-width: 200px; pointer-events: none;
+      pointer-events: none;
     }
     .tooltip-content::after {
       content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
@@ -132,7 +133,12 @@
           <th width="10%">은행</th>
           <th width="10%">비율(%)</th>
           <th width="14%">기존 통장잔고</th>
-          <th width="14%">수입 입력 <span style="color:#3B82F6;">(+)</span></th>
+          <th width="14%">수입 입력 <span style="color:#3B82F6;">(+)</span>
+            <div class="tooltip-container">
+              <span class="tooltip-icon">💡</span>
+              <div class="tooltip-content">메인 수입을 입력하면 설정한 비율에 맞춰<br>자동으로 각 통장에 분배됩니다.</div>
+            </div>
+          </th>
           <th width="14%">지출 입력 <span style="color:#EF4444;">(-)</span></th>
           <th width="10%">최종 통장잔고</th>
         </tr>
@@ -151,10 +157,6 @@
             <div class="input-wrapper">
               <input type="text" class="input-money input-income master-income" placeholder="0" oninput="formatNumber(this); distributeIncome();">
               <button class="btn-add-money" onclick="openAddMoneyPrompt(this)">+</button>
-              <div class="tooltip-container">
-                <span class="tooltip-icon">💡</span>
-                <div class="tooltip-content">메인 수입을 입력하면 설정한 비율에 맞춰<br>자동으로 각 통장에 분배됩니다.</div>
-              </div>
             </div>
           </td>
           <td data-label="지출 입력" style="color:#CBD5E1;">-</td>
@@ -728,15 +730,21 @@
             w.innerHTML = document.getElementById('default-table-template').innerHTML; 
         } 
         
-        w.querySelectorAll('th, td').forEach(el => {
-            if (el.tagName === 'TH') {
-                if (el.innerText.includes('최종잔고')) el.innerText = '기존 통장잔고';
-                if (el.innerText.trim() === '결산') el.innerText = '최종 통장잔고';
-            } else if (el.tagName === 'TD') {
-                if (el.getAttribute('data-label') === '최종잔고') el.setAttribute('data-label', '기존 통장잔고');
-                if (el.getAttribute('data-label') === '결산') el.setAttribute('data-label', '최종 통장잔고');
+        // ★ 과거 데이터 마이그레이션: 툴팁 위치를 td에서 th(헤더)로 이동시키고, 예전 타이틀을 새 타이틀로 변경
+        w.querySelectorAll('th').forEach(th => {
+            if (th.innerText.includes('수입 입력') && !th.querySelector('.tooltip-container')) {
+                th.innerHTML = `수입 입력 <span style="color:#3B82F6;">(+)</span> <div class="tooltip-container"><span class="tooltip-icon">💡</span><div class="tooltip-content">메인 수입을 입력하면 설정한 비율에 맞춰<br>자동으로 각 통장에 분배됩니다.</div></div>`;
             }
+            if (th.innerText.includes('최종잔고')) { th.innerText = '기존 통장잔고'; }
+            if (th.innerText.trim() === '결산') { th.innerText = '최종 통장잔고'; }
         });
+        w.querySelectorAll('td').forEach(td => {
+            if (td.getAttribute('data-label') === '최종잔고') td.setAttribute('data-label', '기존 통장잔고');
+            if (td.getAttribute('data-label') === '결산') td.setAttribute('data-label', '최종 통장잔고');
+        });
+        
+        // td에 남아있던 예전 툴팁 강제 제거 (칸 넓어지게 복구)
+        w.querySelectorAll('td[data-label="수입 입력"] .tooltip-container').forEach(el => el.remove());
 
         loadSummaryTable(y); 
         checkRatios(); 
@@ -877,7 +885,6 @@
     function updateRowNumbers() { document.querySelectorAll('#table-wrapper .sub-item').forEach((item, idx) => { item.querySelector('.row-no').innerText = idx + 2; }); saveDraft(); }
     function saveMonthlyData() { syncDOMValues(); const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; const k = `${y}-${m}`; appData.snapshots[k] = document.getElementById('table-wrapper').innerHTML; const ti = parseInt(document.querySelector('#table-wrapper .master-income').value.replace(/,/g, '')) || 0; let te = 0; document.querySelectorAll('#table-wrapper .sub-item .input-expense').forEach(i => { te += parseInt(i.value.replace(/,/g, '')) || 0; }); appData.summary[y].inc[parseInt(m)-1] = ti; appData.summary[y].exp[parseInt(m)-1] = te; saveGlobalData(); loadSummaryTable(y); recalcFinalWallet(); showAlert('결산 저장 완료', `${y}년 ${m}월 표에 안전하게 기록되었습니다.`); }
     
-    // ★ 상세보기 모달창 열 때 타이틀 강제 변경 로직 추가 ★
     function openSnapshot(m) { 
         const y = document.getElementById('select-year').value; 
         const k = `${y}-${m}`; 
@@ -887,9 +894,11 @@
         const container = document.getElementById('snapshot-container');
         container.innerHTML = appData.snapshots[k]; 
         
-        // 과거 데이터에 적혀있던 예전 텍스트를 새 텍스트로 변환
         container.querySelectorAll('th, td').forEach(el => {
             if (el.tagName === 'TH') {
+                if (el.innerText.includes('수입 입력') && !el.querySelector('.tooltip-container')) {
+                    el.innerHTML = `수입 입력 <span style="color:#3B82F6;">(+)</span> <div class="tooltip-container"><span class="tooltip-icon">💡</span><div class="tooltip-content">메인 수입을 입력하면 설정한 비율에 맞춰<br>자동으로 각 통장에 분배됩니다.</div></div>`;
+                }
                 if (el.innerText.includes('최종잔고')) el.innerText = '기존 통장잔고';
                 if (el.innerText.trim() === '결산') el.innerText = '최종 통장잔고';
             } else if (el.tagName === 'TD') {
@@ -897,6 +906,7 @@
                 if (el.getAttribute('data-label') === '결산') el.setAttribute('data-label', '최종 통장잔고');
             }
         });
+        container.querySelectorAll('td[data-label="수입 입력"] .tooltip-container').forEach(el => el.remove());
         
         document.getElementById('snapshot-modal').style.display = 'flex'; 
     }
