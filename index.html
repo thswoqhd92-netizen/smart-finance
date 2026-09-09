@@ -46,6 +46,11 @@
     .user-badge { font-size: 13px; font-weight: 600; color: #475569; padding: 0 4px; }
     .user-badge .admin-tag { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 800; color: #B45309; background: #FEF3C7; padding: 2px 6px; border-radius: 4px; vertical-align: middle; }
     .table-scroll-card { padding: 0; overflow-x: auto; overflow-y: visible; }
+    .table-scroll-card.is-fitted { overflow-x: hidden; }
+    .table-scroll-card table[data-fit-scale],
+    .table-responsive table[data-fit-scale] {
+      transform-origin: top left;
+    }
     .export-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
     .pc-only { display: inline-flex; }
     .chart-wrap { position: relative; width: 100%; height: 280px; margin-top: 8px; }
@@ -289,15 +294,21 @@
         -webkit-overflow-scrolling: touch;
         overscroll-behavior-x: contain;
       }
+      .table-scroll-card.is-fitted { overflow-x: hidden; }
+      /* 모바일: 표 기본 크기를 먼저 줄인 뒤 JS로 화면에 맞게 추가 축소 */
       .desktop-table {
-        min-width: 880px;
+        min-width: 720px;
         width: max-content;
-        table-layout: auto;
+        table-layout: fixed;
       }
       .desktop-table th,
-      .desktop-table td { padding: 10px 8px; font-size: 12px; }
-      .input-money { font-size: 13px; min-width: 88px; padding: 8px; }
-      .btn-add-money { width: 32px; height: 32px; }
+      .desktop-table td { padding: 6px 4px; font-size: 10px; line-height: 1.25; }
+      .desktop-table .sub-title-input { font-size: 9px; min-height: 28px; margin-top: 2px; }
+      .input-money { font-size: 11px; min-width: 64px; padding: 5px 4px; }
+      .btn-add-money { width: 24px; height: 24px; font-size: 12px; }
+      .ratio-input { width: 36px; font-size: 10px; }
+      .auto-calc-box { padding: 6px; }
+      .master-ratio-display { font-size: 12px !important; padding: 2px 6px !important; }
       .summary-amount { font-size: 24px; }
       .input-target { font-size: 16px; }
       .btn { padding: 14px; font-size: 14px; min-height: 48px; }
@@ -514,7 +525,7 @@
           <button class="btn-action" onclick="addRow()">+ 항목 추가</button>
           <button class="btn-action delete" onclick="deleteSelectedRows()">- 항목 제거</button>
         </div>
-        <div class="scroll-hint">↔ 표는 좌우로 밀어 전체 항목을 볼 수 있습니다</div>
+        <div class="scroll-hint" id="main-table-hint">모바일에서는 표가 화면에 맞게 자동 축소됩니다</div>
         <div class="card table-scroll-card" id="table-wrapper"></div>
       </div>
 
@@ -547,7 +558,7 @@
           <button type="button" class="btn-top" onclick="exportExcel()">엑셀 내보내기</button>
         </div>
       </div>
-      <div class="scroll-hint" style="margin-top:10px;">↔ 결산 표도 좌우로 밀어 1~12월을 확인하세요</div>
+      <div class="scroll-hint" id="monthly-table-hint" style="margin-top:10px;">결산 표도 화면에 맞게 자동 축소됩니다</div>
       <div class="table-responsive" style="margin-top:8px;">
         <table class="monthly-table" id="monthly-table">
           <thead><tr id="monthly-headers"></tr></thead>
@@ -768,8 +779,114 @@
       setCurrentPeriod();
       buildMonthlyTableHeaders();
       initTooltipSystem();
+      window.addEventListener('resize', scheduleFitMobileTables);
+      window.addEventListener('orientationchange', () => setTimeout(fitMobileTables, 250));
       setTimeout(() => { clearLoginFields(); }, 100);
     };
+
+    let fitTableTimer = null;
+    function scheduleFitMobileTables() {
+      clearTimeout(fitTableTimer);
+      fitTableTimer = setTimeout(fitMobileTables, 80);
+    }
+
+    function isMobileLayout() {
+      return window.matchMedia('(max-width: 1100px)').matches;
+    }
+
+    function clearFitStyles(table, wrap) {
+      if (table) {
+        table.style.zoom = '';
+        table.style.transform = '';
+        table.style.transformOrigin = '';
+        table.removeAttribute('data-fit-scale');
+      }
+      if (wrap) {
+        wrap.style.height = '';
+        wrap.classList.remove('is-fitted');
+      }
+    }
+
+    /** 모바일에서 빨간칸(메인 표)·결산 표를 화면 너비에 맞게 축소해 한눈에 보이게 */
+    function fitMobileTables() {
+      const mainWrap = document.getElementById('table-wrapper');
+      const mainTable = mainWrap ? mainWrap.querySelector('table') : null;
+      const monthWrap = document.querySelector('.bottom-section .table-responsive');
+      const monthTable = document.getElementById('monthly-table');
+      const mainHint = document.getElementById('main-table-hint');
+      const monthHint = document.getElementById('monthly-table-hint');
+
+      clearFitStyles(mainTable, mainWrap);
+      clearFitStyles(monthTable, monthWrap);
+
+      if (!isMobileLayout()) {
+        if (mainHint) mainHint.style.display = 'none';
+        if (monthHint) monthHint.style.display = 'none';
+        return;
+      }
+      if (mainHint) mainHint.style.display = 'block';
+      if (monthHint) monthHint.style.display = 'block';
+
+      requestAnimationFrame(() => {
+        fitOneTable(mainWrap, mainTable, mainHint);
+        fitOneTable(monthWrap, monthTable, monthHint);
+      });
+    }
+
+    function fitOneTable(wrap, table, hintEl) {
+      if (!wrap || !table) return;
+      clearFitStyles(table, wrap);
+
+      const avail = Math.max(wrap.clientWidth - 2, 280);
+      const need = table.scrollWidth || table.offsetWidth;
+      if (!need || need <= avail) {
+        if (hintEl) hintEl.textContent = '표가 화면에 맞춰 표시됩니다';
+        wrap.classList.add('is-fitted');
+        return;
+      }
+
+      // 한 화면에 전체가 들어오도록 축소 (너무 작아지지 않게 하한 0.38)
+      let scale = avail / need;
+      scale = Math.min(1, Math.max(0.38, scale));
+
+      const supportsZoom = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '0.5');
+      table.setAttribute('data-fit-scale', String(scale.toFixed(3)));
+
+      if (supportsZoom) {
+        table.style.zoom = String(scale);
+        wrap.classList.add('is-fitted');
+        wrap.style.height = '';
+      } else {
+        // iOS Safari 등: transform 축소 + 높이 보정
+        table.style.transformOrigin = 'top left';
+        table.style.transform = `scale(${scale})`;
+        wrap.style.height = Math.ceil(table.offsetHeight * scale) + 'px';
+        wrap.classList.add('is-fitted');
+      }
+
+      const pct = Math.round(scale * 100);
+      if (hintEl) {
+        hintEl.textContent = pct < 100
+          ? `표를 ${pct}% 크기로 축소해 한눈에 보이게 했습니다`
+          : '표가 화면에 맞춰 표시됩니다';
+      }
+    }
+
+    /** 화면에 보이는 축소는 유지한 채, 저장용 HTML만 원본 크기로 추출 */
+    function getCleanTableHtml() {
+      const w = document.getElementById('table-wrapper');
+      const tmp = document.createElement('div');
+      tmp.innerHTML = w.innerHTML;
+      const t = tmp.querySelector('table');
+      if (t) {
+        t.style.zoom = '';
+        t.style.transform = '';
+        t.style.transformOrigin = '';
+        t.removeAttribute('data-fit-scale');
+        if (!(t.getAttribute('style') || '').trim()) t.removeAttribute('style');
+      }
+      return tmp.innerHTML;
+    }
 
     function setCurrentPeriod() {
       const now = new Date();
@@ -1566,7 +1683,7 @@
     function saveDraft() { 
         if(!currentKey) return; 
         syncDOMValues(); 
-        const currentHTML = document.getElementById('table-wrapper').innerHTML;
+        const currentHTML = getCleanTableHtml();
         appData.drafts[currentKey] = currentHTML; 
 
         const tempDiv = document.createElement('div');
@@ -1615,6 +1732,7 @@
         checkRatios(); 
         distributeIncome(); 
         recalcFinalWallet(); 
+        scheduleFitMobileTables();
     }
 
     function loadPreviousMonthBalances() {
@@ -1664,6 +1782,7 @@
         ec[i].innerText = s.exp[i] ? s.exp[i].toLocaleString('ko-KR') : '0';
       }
       updateMonthlyChart(year);
+      scheduleFitMobileTables();
     }
     function formatModalNumber(inp) { if(inp.getAttribute('inputmode') !== 'numeric' && !inp.classList.contains('input-money')) return; let v = inp.value.replace(/[^0-9]/g, ''); inp.value = v === '' ? '' : parseInt(v, 10).toLocaleString('ko-KR'); }
     function formatNumber(inp) { let v = inp.value.replace(/[^0-9]/g, ''); inp.value = v === '' ? '' : parseInt(v, 10).toLocaleString('ko-KR'); saveDraft(); }
@@ -1750,12 +1869,27 @@
         if(fDisplay) fDisplay.innerText = '0';
 
         c.appendChild(clo); 
-        updateRowNumbers(); checkRatios(); distributeIncome(); 
+        updateRowNumbers(); checkRatios(); distributeIncome();
+        scheduleFitMobileTables();
     }
 
-    function deleteSelectedRows() { const cbs = document.querySelectorAll('#table-wrapper .row-checkbox'); let del = []; cbs.forEach(cb => { if(cb.checked) del.push(cb.closest('.sub-item')); }); if(del.length === 0) { showAlert('안내', '제거하실 항목의 좌측 체크박스를 먼저 선택해 주세요.', false); return; } const subs = document.querySelectorAll('#table-wrapper .sub-item'); if(subs.length - del.length < 1) { showAlert('경고', '최소 1개의 항목은 남아있어야 합니다.', false); return; } del.forEach(item => item.remove()); updateRowNumbers(); checkRatios(); distributeIncome(); }
+    function deleteSelectedRows() { const cbs = document.querySelectorAll('#table-wrapper .row-checkbox'); let del = []; cbs.forEach(cb => { if(cb.checked) del.push(cb.closest('.sub-item')); }); if(del.length === 0) { showAlert('안내', '제거하실 항목의 좌측 체크박스를 먼저 선택해 주세요.', false); return; } const subs = document.querySelectorAll('#table-wrapper .sub-item'); if(subs.length - del.length < 1) { showAlert('경고', '최소 1개의 항목은 남아있어야 합니다.', false); return; } del.forEach(item => item.remove()); updateRowNumbers(); checkRatios(); distributeIncome(); scheduleFitMobileTables(); }
     function updateRowNumbers() { document.querySelectorAll('#table-wrapper .sub-item').forEach((item, idx) => { item.querySelector('.row-no').innerText = idx + 2; }); saveDraft(); }
-    function saveMonthlyData() { syncDOMValues(); const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; const k = `${y}-${m}`; appData.snapshots[k] = document.getElementById('table-wrapper').innerHTML; const ti = parseInt(document.querySelector('#table-wrapper .master-income').value.replace(/,/g, '')) || 0; let te = 0; document.querySelectorAll('#table-wrapper .sub-item .input-expense').forEach(i => { te += parseInt(i.value.replace(/,/g, '')) || 0; }); appData.summary[y].inc[parseInt(m)-1] = ti; appData.summary[y].exp[parseInt(m)-1] = te; saveGlobalData(); loadSummaryTable(y); recalcFinalWallet(); showAlert('결산 저장 완료', `${y}년 ${m}월 표에 안전하게 기록되었습니다.`); }
+    function saveMonthlyData() {
+      syncDOMValues();
+      const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value;
+      const k = `${y}-${m}`;
+      appData.snapshots[k] = getCleanTableHtml();
+      const ti = parseInt(document.querySelector('#table-wrapper .master-income').value.replace(/,/g, '')) || 0;
+      let te = 0;
+      document.querySelectorAll('#table-wrapper .sub-item .input-expense').forEach(i => { te += parseInt(i.value.replace(/,/g, '')) || 0; });
+      appData.summary[y].inc[parseInt(m)-1] = ti;
+      appData.summary[y].exp[parseInt(m)-1] = te;
+      saveGlobalData();
+      loadSummaryTable(y);
+      recalcFinalWallet();
+      showAlert('결산 저장 완료', `${y}년 ${m}월 표에 안전하게 기록되었습니다.`);
+    }
     
     function openSnapshot(m) { 
         const y = document.getElementById('select-year').value; 
@@ -1851,7 +1985,7 @@
 
     function saveWalletModal() { appData.wallet.base = parseInt(document.getElementById('base-wallet-input').value.replace(/,/g, '')) || 0; saveGlobalData(); recalcFinalWallet(); closeModal('wallet-modal'); showAlert('변경 완료', '초기 자본 금액이 성공적으로 변경되었습니다.'); }
     function openHistoryModal() { const g = document.getElementById('history-grid'); g.innerHTML = ''; const y = document.getElementById('select-year').value; const s = appData.summary[y]; for (let i = 0; i < 12; i++) { let ic = s.inc[i] ? s.inc[i].toLocaleString('ko-KR') : '0'; let ec = s.exp[i] ? s.exp[i].toLocaleString('ko-KR') : '0'; g.innerHTML += `<div class="history-card"><div class="history-month"><span>${i+1}월 결산</span></div><div class="field-header"><span>수입</span></div><input type="text" class="input-money h-inc" style="border:1px solid #E2E8F0; padding:6px; margin-bottom:10px;" value="${ic}" oninput="formatModalNumber(this)"><div class="field-header"><span>지출</span></div><input type="text" class="input-money h-exp" style="border:1px solid #E2E8F0; padding:6px;" value="${ec}" oninput="formatModalNumber(this)"></div>`; } document.getElementById('history-modal').style.display = 'flex'; }
-    function saveHistoryModal() { const y = document.getElementById('select-year').value; const is = document.querySelectorAll('.history-card .h-inc'); const es = document.querySelectorAll('.history-card .h-exp'); for (let i = 0; i < 12; i++) { let iv = parseInt(is[i].value.replace(/,/g, '')) || 0; let ev = parseInt(es[i].value.replace(/,/g, '')) || 0; appData.summary[y].inc[i] = iv; appData.summary[y].exp[i] = ev; if (iv === 0 && ev === 0) { const k = `${y}-${i + 1}`; delete appData.snapshots[k]; delete appData.drafts[k]; } } saveGlobalData(); loadSummaryTable(y); recalcFinalWallet(); const m = document.getElementById('select-month').value; if (!appData.drafts[`${y}-${m}`]) { document.getElementById('table-wrapper').innerHTML = document.getElementById('default-table-template').innerHTML; checkRatios(); distributeIncome(); } closeModal('history-modal'); showAlert('저장 완료', '월별 요약 내역이 수정되었습니다.'); }
+    function saveHistoryModal() { const y = document.getElementById('select-year').value; const is = document.querySelectorAll('.history-card .h-inc'); const es = document.querySelectorAll('.history-card .h-exp'); for (let i = 0; i < 12; i++) { let iv = parseInt(is[i].value.replace(/,/g, '')) || 0; let ev = parseInt(es[i].value.replace(/,/g, '')) || 0; appData.summary[y].inc[i] = iv; appData.summary[y].exp[i] = ev; if (iv === 0 && ev === 0) { const k = `${y}-${i + 1}`; delete appData.snapshots[k]; delete appData.drafts[k]; } } saveGlobalData(); loadSummaryTable(y); recalcFinalWallet(); const m = document.getElementById('select-month').value; if (!appData.drafts[`${y}-${m}`]) { document.getElementById('table-wrapper').innerHTML = document.getElementById('default-table-template').innerHTML; checkRatios(); distributeIncome(); } closeModal('history-modal'); scheduleFitMobileTables(); showAlert('저장 완료', '월별 요약 내역이 수정되었습니다.'); }
   </script>
 </body>
 </html>
