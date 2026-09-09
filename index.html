@@ -6,35 +6,73 @@
   <title>스마트 재무 대시보드</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Pretendard', sans-serif; background-color: #F4F7FB; margin: 0; padding: 20px; color: #333; min-width: 1400px; }
+    body { font-family: 'Pretendard', sans-serif; background-color: #F1F5F9; margin: 0; padding: 16px; color: #334155; min-width: 1400px; line-height: 1.45; }
     #dashboard-view { display: none; width: 1400px; margin: 0 auto; }
     
     /* 로그인 화면 */
-    #login-view { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); width: 100%; }
-    .login-card { background: white; border-radius: 24px; padding: 40px 30px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
-    .login-icon { font-size: 48px; margin-bottom: 10px; }
-    .login-title { font-size: 24px; font-weight: 800; color: #1E293B; margin-bottom: 5px; }
-    .login-subtitle { font-size: 14px; color: #64748B; margin-bottom: 30px; }
-    .input-group { margin-bottom: 15px; text-align: left; }
-    .input-group label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
-    .input-group input, .input-group select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #CBD5E1; font-size: 15px; transition: 0.2s; outline: none; background-color: white; }
+    #login-view { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(160deg, #F8FAFC 0%, #E0F2FE 55%, #DBEAFE 100%); width: 100%; }
+    .login-card { background: white; border-radius: 20px; padding: 36px 28px; width: 100%; max-width: 400px; box-shadow: 0 8px 30px rgba(15,23,42,0.06); text-align: center; border: 1px solid #E2E8F0; }
+    .login-icon { font-size: 40px; margin-bottom: 8px; }
+    .login-title { font-size: 22px; font-weight: 800; color: #0F172A; margin-bottom: 4px; letter-spacing: -0.02em; }
+    .login-subtitle { font-size: 13px; color: #64748B; margin-bottom: 24px; }
+    .input-group { margin-bottom: 14px; text-align: left; }
+    .input-group label { display: block; font-size: 12px; font-weight: 600; color: #64748B; margin-bottom: 5px; }
+    .input-group input, .input-group select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 14px; transition: 0.2s; outline: none; background-color: white; }
     .input-group input:focus, .input-group select:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-    .btn-login { width: 100%; background: #3B82F6; color: white; border: none; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .btn-login { width: 100%; background: #2563EB; color: white; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+    .btn-login:hover { background: #1D4ED8; }
     .btn-login:disabled { background: #94A3B8; cursor: not-allowed; }
-    .toggle-link { text-align: center; font-size: 13px; margin-top: 16px; color: #64748b; cursor: pointer; }
-    .toggle-link:hover { color: #3B82F6; text-decoration: underline; }
+    .toggle-link { text-align: center; font-size: 13px; margin-top: 14px; color: #64748b; cursor: pointer; }
+    .toggle-link:hover { color: #2563EB; text-decoration: underline; }
     .find-link { font-size: 12px; color: #94A3B8; text-align: right; margin-top: 5px; cursor: pointer; }
-    .find-link:hover { color: #3B82F6; text-decoration: underline; }
+    .find-link:hover { color: #2563EB; text-decoration: underline; }
 
     /* 대시보드 공통 UI */
-    .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 20px; }
-    .section-title { font-size: 18px; font-weight: 700; color: #1E293B; margin-top: 0; margin-bottom: 15px; }
-    .top-bar { display: flex; gap: 15px; align-items: center; background: white; padding: 15px 24px; border-radius: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-    .top-bar select { padding: 8px 12px; border-radius: 8px; border: 1px solid #E2E8F0; font-size: 15px; font-weight: 600; color: #475569; outline: none; cursor: pointer; }
+    .card { background: white; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(15,23,42,0.04); margin-bottom: 16px; border: 1px solid #E2E8F0; }
+    .section-title { font-size: 16px; font-weight: 700; color: #0F172A; margin-top: 0; margin-bottom: 12px; letter-spacing: -0.01em; }
+    .top-label { display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 4px; letter-spacing: 0.02em; }
+    .top-bar { display: flex; gap: 12px; align-items: center; background: white; padding: 12px 18px; border-radius: 12px; margin-bottom: 16px; flex-wrap: wrap; border: 1px solid #E2E8F0; box-shadow: 0 1px 2px rgba(15,23,42,0.03); }
+    .top-bar select { padding: 7px 10px; border-radius: 8px; border: 1px solid #E2E8F0; font-size: 14px; font-weight: 600; color: #334155; outline: none; cursor: pointer; background: #F8FAFC; }
+    .top-user-area { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn-top { padding: 7px 12px; border-radius: 8px; border: 1px solid #E2E8F0; background: #F8FAFC; cursor: pointer; font-size: 12px; font-weight: 700; color: #475569; transition: 0.15s; white-space: nowrap; }
+    .btn-top:hover { background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8; }
+    .btn-top.logout { color: #DC2626; background: white; }
+    .btn-top.logout:hover { background: #FEF2F2; border-color: #FECACA; }
+    .btn-top.admin { color: #B45309; background: #FFFBEB; border-color: #FDE68A; }
+    .user-badge { font-size: 13px; font-weight: 600; color: #475569; padding: 0 4px; }
+    .user-badge .admin-tag { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 800; color: #B45309; background: #FEF3C7; padding: 2px 6px; border-radius: 4px; vertical-align: middle; }
+
+    /* 공지 / 문의 패널 */
+    .board-list { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
+    .board-item { border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px 16px; background: #F8FAFC; cursor: pointer; transition: 0.15s; text-align: left; }
+    .board-item:hover { border-color: #93C5FD; background: #EFF6FF; }
+    .board-item.active { border-color: #3B82F6; background: white; box-shadow: 0 0 0 2px rgba(59,130,246,0.12); }
+    .board-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+    .board-item-title { font-size: 14px; font-weight: 700; color: #0F172A; }
+    .board-item-date { font-size: 11px; color: #94A3B8; white-space: nowrap; }
+    .board-item-meta { font-size: 12px; color: #64748B; line-height: 1.5; white-space: pre-wrap; }
+    .status-pill { display: inline-block; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+    .status-pill.wait { background: #FEF3C7; color: #B45309; }
+    .status-pill.done { background: #DCFCE7; color: #15803D; }
+    .board-empty { text-align: center; padding: 36px 16px; color: #94A3B8; font-size: 13px; }
+    .board-detail { margin-top: 14px; padding: 16px; border-radius: 10px; border: 1px solid #E2E8F0; background: white; text-align: left; }
+    .board-detail h4 { margin: 0 0 8px; font-size: 15px; color: #0F172A; }
+    .board-detail .detail-body { font-size: 13px; color: #475569; white-space: pre-wrap; line-height: 1.6; margin-bottom: 12px; }
+    .reply-box { background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px; margin-top: 10px; }
+    .reply-box .reply-label { font-size: 11px; font-weight: 700; color: #15803D; margin-bottom: 6px; }
+    .admin-form { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 10px; padding: 14px; margin-bottom: 14px; text-align: left; }
+    .board-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .btn-sm { padding: 8px 12px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; color: white; background: #2563EB; }
+    .btn-sm.gray { background: #64748B; }
+    .btn-sm.red { background: #EF4444; }
+    .btn-sm.amber { background: #D97706; }
+    .seg-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .seg-tab { flex: 1; text-align: center; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #64748B; background: #F1F5F9; cursor: pointer; border: 1px solid transparent; }
+    .seg-tab.active { background: white; color: #2563EB; border-color: #BFDBFE; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
     
-    .middle-section { display: grid; grid-template-columns: 2.8fr 1fr; gap: 20px; }
-    .table-actions { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 10px; }
-    .btn-action { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; color: white; background: #64748B; transition: 0.2s; }
+    .middle-section { display: grid; grid-template-columns: 2.8fr 1fr; gap: 16px; }
+    .table-actions { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 8px; }
+    .btn-action { padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; color: white; background: #64748B; transition: 0.2s; }
     .btn-action:hover { background: #475569; }
     .btn-action.delete { background: #EF4444; }
     .desktop-table { width: 100%; border-collapse: collapse; min-width: 900px; }
@@ -283,9 +321,11 @@
           </select>
         </div>
       </div>
-      <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
-        <span id="display-user-id" style="font-size: 14px; font-weight: 600; color: #475569;">👤 로그인: -</span>
-        <button onclick="handleLogout()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #E2E8F0; background: white; cursor:pointer; font-size:13px; font-weight:700; color:#EF4444; transition: 0.2s;">로그아웃</button>
+      <div class="top-user-area">
+        <button type="button" class="btn-top" onclick="openNoticeModal()">공지사항</button>
+        <button type="button" class="btn-top" id="btn-inquiry" onclick="openInquiryModal()">문의하기</button>
+        <span id="display-user-id" class="user-badge">로그인: -</span>
+        <button type="button" class="btn-top logout" onclick="handleLogout()">로그아웃</button>
       </div>
     </div>
 
@@ -453,6 +493,69 @@
   <div class="modal-overlay" id="history-modal"><div class="modal-content large"><div class="modal-close" onclick="closeModal('history-modal')">✖</div><div class="modal-title">월별 내역 요약 관리</div><div class="history-grid" id="history-grid"></div><button class="btn btn-income" style="width:100%; margin-top:20px;" onclick="saveHistoryModal()">변경사항 저장하기</button></div></div>
   <div class="modal-overlay" id="snapshot-modal"><div class="modal-content large"><div class="modal-close" onclick="closeModal('snapshot-modal')">✖</div><div class="modal-title" id="snapshot-title">결산 내역</div><div class="table-responsive" id="snapshot-container"></div></div></div>
 
+  <!-- 공지사항 -->
+  <div class="modal-overlay" id="notice-modal">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-close" onclick="closeModal('notice-modal')">✖</div>
+      <div class="modal-title">공지사항</div>
+      <div id="notice-admin-form" class="admin-form" style="display:none;">
+        <div style="font-size:13px; font-weight:800; color:#92400E; margin-bottom:10px;">운영자 · 공지 등록/수정</div>
+        <input type="hidden" id="notice-edit-id" value="">
+        <div class="input-group">
+          <label>제목</label>
+          <input type="text" id="notice-title-input" placeholder="업데이트 제목">
+        </div>
+        <div class="input-group">
+          <label>내용</label>
+          <textarea id="notice-content-input" class="transparent-input sub-title-input" style="min-height:90px; border:1px solid #CBD5E1; background:white; padding:10px; border-radius:8px;" placeholder="업데이트 내용을 적어 주세요"></textarea>
+        </div>
+        <div class="input-group">
+          <label>운영자 비밀번호 확인</label>
+          <input type="password" id="notice-admin-pw" placeholder="비밀번호 재입력" autocomplete="new-password">
+        </div>
+        <div class="board-actions">
+          <button type="button" class="btn-sm amber" onclick="saveNotice()">저장</button>
+          <button type="button" class="btn-sm gray" onclick="resetNoticeForm()">작성 취소</button>
+        </div>
+      </div>
+      <div class="board-list" id="notice-list"><div class="board-empty">불러오는 중...</div></div>
+      <div id="notice-detail" class="board-detail" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- 문의하기 -->
+  <div class="modal-overlay" id="inquiry-modal">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-close" onclick="closeModal('inquiry-modal')">✖</div>
+      <div class="modal-title" id="inquiry-modal-title">문의하기</div>
+      <div class="seg-tabs" id="inquiry-tabs">
+        <div class="seg-tab active" id="tab-inquiry-write" onclick="switchInquiryTab('write')">문의 작성</div>
+        <div class="seg-tab" id="tab-inquiry-list" onclick="switchInquiryTab('list')">내 문의 / 답변</div>
+      </div>
+
+      <div id="inquiry-write-section">
+        <div class="input-group">
+          <label>제목</label>
+          <input type="text" id="inquiry-title-input" placeholder="예: 이런 기능 추가해 주세요">
+        </div>
+        <div class="input-group">
+          <label>내용</label>
+          <textarea id="inquiry-content-input" class="transparent-input sub-title-input" style="min-height:110px; border:1px solid #CBD5E1; background:white; padding:10px; border-radius:8px;" placeholder="운영자에게 남길 메모를 작성해 주세요"></textarea>
+        </div>
+        <div class="input-group">
+          <label>비밀번호 확인 <span style="font-weight:500; color:#94A3B8;">(본인 확인 후 등록됩니다)</span></label>
+          <input type="password" id="inquiry-pw-input" placeholder="로그인 비밀번호 재입력" autocomplete="new-password">
+        </div>
+        <button type="button" class="btn btn-income" style="width:100%" onclick="submitInquiry()">문의 등록</button>
+      </div>
+
+      <div id="inquiry-list-section" style="display:none;">
+        <div class="board-list" id="inquiry-list"><div class="board-empty">불러오는 중...</div></div>
+        <div id="inquiry-detail" class="board-detail" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ★★★ 필수 수정: 앱스 크립트 URL 넣는 곳 ★★★
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
@@ -461,8 +564,12 @@
     let currentKey = ''; 
     let isSignupMode = false;
     let currentUserId = '';       
-    let currentUserName = '';     
-    let cloudSaveTimeout = null;  
+    let currentUserName = '';
+    let isAdmin = false;
+    let cloudSaveTimeout = null;
+    let noticeCache = [];
+    let inquiryCache = [];
+    let inquirySessionPw = ''; // 목록 조회용 세션 비밀번호(브라우저 메모리만)  
 
     window.onload = () => {
       initYearDropdown();
@@ -552,7 +659,9 @@
                 document.getElementById('login-view').style.display = 'none';
                 document.getElementById('dashboard-view').style.display = 'block';
                 document.getElementById('target-amount').value = appData.wallet.target.toLocaleString('ko-KR');
-                document.getElementById('display-user-id').innerText = `👤 로그인: ${currentUserName} 님`;
+                isAdmin = !!res.isAdmin;
+                inquirySessionPw = pw;
+                updateUserBadge();
                 
                 switchMonth();
             }
@@ -566,16 +675,300 @@
       loginBtn.innerText = isSignupMode ? '가입 완료하기' : '로그인'; loginBtn.disabled = false;
     }
 
+    function updateUserBadge() {
+      const el = document.getElementById('display-user-id');
+      const adminTag = isAdmin ? '<span class="admin-tag">운영자</span>' : '';
+      el.innerHTML = `로그인: ${currentUserName} 님${adminTag}`;
+      const inqBtn = document.getElementById('btn-inquiry');
+      if (inqBtn) inqBtn.classList.toggle('admin', isAdmin);
+    }
+
     function handleLogout() {
       saveGlobalData(); 
       currentUserId = '';
       currentUserName = '';
+      isAdmin = false;
+      inquirySessionPw = '';
+      noticeCache = [];
+      inquiryCache = [];
       clearLoginFields(); 
       document.getElementById('dashboard-view').style.display = 'none';
       document.getElementById('login-view').style.display = 'flex';
       appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } };
       currentKey = '';
       document.getElementById('table-wrapper').innerHTML = ''; 
+    }
+
+    async function gasPost(payload) {
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    }
+
+    // ── 공지사항 ──
+    async function openNoticeModal() {
+      resetNoticeForm();
+      document.getElementById('notice-admin-form').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('notice-detail').style.display = 'none';
+      document.getElementById('notice-modal').style.display = 'flex';
+      document.getElementById('notice-list').innerHTML = '<div class="board-empty">불러오는 중...</div>';
+      try {
+        const res = await gasPost({ action: 'getNotices' });
+        if (!res.success) { showAlert('안내', res.message || '공지를 불러오지 못했습니다.', false); return; }
+        noticeCache = res.notices || [];
+        renderNoticeList();
+      } catch (e) {
+        document.getElementById('notice-list').innerHTML = '<div class="board-empty">공지를 불러오지 못했습니다.</div>';
+      }
+    }
+
+    function renderNoticeList() {
+      const list = document.getElementById('notice-list');
+      if (!noticeCache.length) {
+        list.innerHTML = '<div class="board-empty">등록된 공지사항이 없습니다.</div>';
+        return;
+      }
+      list.innerHTML = noticeCache.map((n, idx) => `
+        <div class="board-item" onclick="showNoticeDetail(${idx})">
+          <div class="board-item-top">
+            <div class="board-item-title">${escapeHtml(n.title)}</div>
+            <div class="board-item-date">${escapeHtml(n.date)}</div>
+          </div>
+          <div class="board-item-meta">${escapeHtml((n.content || '').slice(0, 80))}${(n.content || '').length > 80 ? '…' : ''}</div>
+        </div>
+      `).join('');
+    }
+
+    function showNoticeDetail(idx) {
+      const n = noticeCache[idx];
+      if (!n) return;
+      const detail = document.getElementById('notice-detail');
+      detail.style.display = 'block';
+      let adminBtns = '';
+      if (isAdmin) {
+        adminBtns = `<div class="board-actions">
+          <button type="button" class="btn-sm amber" onclick="editNotice('${n.id}')">수정</button>
+          <button type="button" class="btn-sm red" onclick="deleteNotice('${n.id}')">삭제</button>
+        </div>`;
+      }
+      detail.innerHTML = `
+        <div class="board-item-date" style="margin-bottom:6px;">${escapeHtml(n.date)}${n.author ? ' · ' + escapeHtml(n.author) : ''}</div>
+        <h4>${escapeHtml(n.title)}</h4>
+        <div class="detail-body">${escapeHtml(n.content)}</div>
+        ${adminBtns}
+      `;
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function resetNoticeForm() {
+      document.getElementById('notice-edit-id').value = '';
+      document.getElementById('notice-title-input').value = '';
+      document.getElementById('notice-content-input').value = '';
+      document.getElementById('notice-admin-pw').value = '';
+    }
+
+    function editNotice(noticeId) {
+      const n = noticeCache.find(x => x.id === noticeId);
+      if (!n) return;
+      document.getElementById('notice-edit-id').value = n.id;
+      document.getElementById('notice-title-input').value = n.title;
+      document.getElementById('notice-content-input').value = n.content;
+      document.getElementById('notice-admin-form').style.display = 'block';
+      document.getElementById('notice-admin-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function saveNotice() {
+      const title = document.getElementById('notice-title-input').value.trim();
+      const content = document.getElementById('notice-content-input').value.trim();
+      const password = document.getElementById('notice-admin-pw').value;
+      const noticeId = document.getElementById('notice-edit-id').value;
+      if (!title || !content) { showAlert('안내', '제목과 내용을 입력해 주세요.', false); return; }
+      if (!password) { showAlert('안내', '운영자 비밀번호를 입력해 주세요.', false); return; }
+      try {
+        const action = noticeId ? 'updateNotice' : 'createNotice';
+        const res = await gasPost({ action, id: currentUserId, password, title, content, noticeId });
+        if (!res.success) { showAlert('실패', res.message, false); return; }
+        showAlert('완료', res.message, true);
+        inquirySessionPw = password;
+        resetNoticeForm();
+        openNoticeModal();
+      } catch (e) {
+        showAlert('통신 오류', '공지 저장 중 오류가 발생했습니다.', false);
+      }
+    }
+
+    async function deleteNotice(noticeId) {
+      const password = prompt('삭제를 위해 운영자 비밀번호를 입력해 주세요.');
+      if (password === null) return;
+      if (!password) { showAlert('안내', '비밀번호를 입력해 주세요.', false); return; }
+      try {
+        const res = await gasPost({ action: 'deleteNotice', id: currentUserId, password, noticeId });
+        if (!res.success) { showAlert('실패', res.message, false); return; }
+        showAlert('완료', res.message, true);
+        openNoticeModal();
+      } catch (e) {
+        showAlert('통신 오류', '공지 삭제 중 오류가 발생했습니다.', false);
+      }
+    }
+
+    // ── 문의하기 ──
+    function openInquiryModal() {
+      document.getElementById('inquiry-modal-title').innerText = isAdmin ? '문의 관리' : '문의하기';
+      document.getElementById('inquiry-modal').style.display = 'flex';
+      if (isAdmin) {
+        document.getElementById('inquiry-tabs').style.display = 'none';
+        document.getElementById('inquiry-write-section').style.display = 'none';
+        document.getElementById('inquiry-list-section').style.display = 'block';
+        loadInquiries();
+      } else {
+        document.getElementById('inquiry-tabs').style.display = 'flex';
+        switchInquiryTab('write');
+      }
+    }
+
+    function switchInquiryTab(tab) {
+      const write = tab === 'write';
+      document.getElementById('tab-inquiry-write').classList.toggle('active', write);
+      document.getElementById('tab-inquiry-list').classList.toggle('active', !write);
+      document.getElementById('inquiry-write-section').style.display = write ? 'block' : 'none';
+      document.getElementById('inquiry-list-section').style.display = write ? 'none' : 'block';
+      if (!write) loadInquiries();
+    }
+
+    async function submitInquiry() {
+      const title = document.getElementById('inquiry-title-input').value.trim();
+      const content = document.getElementById('inquiry-content-input').value.trim();
+      const password = document.getElementById('inquiry-pw-input').value;
+      if (!title || !content) { showAlert('안내', '제목과 내용을 입력해 주세요.', false); return; }
+      if (!password) { showAlert('안내', '비밀번호를 입력해 주세요.', false); return; }
+      try {
+        const res = await gasPost({ action: 'submitInquiry', id: currentUserId, password, title, content });
+        if (!res.success) { showAlert('실패', res.message, false); return; }
+        inquirySessionPw = password;
+        document.getElementById('inquiry-title-input').value = '';
+        document.getElementById('inquiry-content-input').value = '';
+        document.getElementById('inquiry-pw-input').value = '';
+        showAlert('완료', res.message, true);
+        switchInquiryTab('list');
+      } catch (e) {
+        showAlert('통신 오류', '문의 등록 중 오류가 발생했습니다.', false);
+      }
+    }
+
+    async function loadInquiries() {
+      const listEl = document.getElementById('inquiry-list');
+      const detailEl = document.getElementById('inquiry-detail');
+      detailEl.style.display = 'none';
+      listEl.innerHTML = '<div class="board-empty">불러오는 중...</div>';
+
+      let password = inquirySessionPw;
+      if (!password) {
+        password = prompt('문의 내역 확인을 위해 비밀번호를 입력해 주세요.') || '';
+        if (!password) {
+          listEl.innerHTML = '<div class="board-empty">비밀번호 확인 후 조회할 수 있습니다.</div>';
+          return;
+        }
+      }
+
+      try {
+        const action = isAdmin ? 'getAllInquiries' : 'getMyInquiries';
+        const res = await gasPost({ action, id: currentUserId, password });
+        if (!res.success) {
+          inquirySessionPw = '';
+          listEl.innerHTML = `<div class="board-empty">${escapeHtml(res.message || '조회 실패')}</div>`;
+          return;
+        }
+        inquirySessionPw = password;
+        inquiryCache = res.inquiries || [];
+        renderInquiryList();
+      } catch (e) {
+        listEl.innerHTML = '<div class="board-empty">문의를 불러오지 못했습니다.</div>';
+      }
+    }
+
+    function renderInquiryList() {
+      const list = document.getElementById('inquiry-list');
+      if (!inquiryCache.length) {
+        list.innerHTML = '<div class="board-empty">등록된 문의가 없습니다.</div>';
+        return;
+      }
+      list.innerHTML = inquiryCache.map((q, idx) => {
+        const done = q.status === '답변완료';
+        const who = isAdmin ? `<span style="color:#64748B;">${escapeHtml(q.userName)} (${escapeHtml(q.userId)})</span> · ` : '';
+        return `
+          <div class="board-item" onclick="showInquiryDetail(${idx})">
+            <div class="board-item-top">
+              <div class="board-item-title">${escapeHtml(q.title)}</div>
+              <span class="status-pill ${done ? 'done' : 'wait'}">${done ? '답변완료' : '대기'}</span>
+            </div>
+            <div class="board-item-meta">${who}${escapeHtml(q.date)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showInquiryDetail(idx) {
+      const q = inquiryCache[idx];
+      if (!q) return;
+      const detail = document.getElementById('inquiry-detail');
+      detail.style.display = 'block';
+      const replyHtml = q.reply
+        ? `<div class="reply-box"><div class="reply-label">운영자 답변${q.replyDate ? ' · ' + escapeHtml(q.replyDate) : ''}${q.replyBy ? ' · ' + escapeHtml(q.replyBy) : ''}</div><div class="detail-body" style="margin:0;">${escapeHtml(q.reply)}</div></div>`
+        : `<div class="board-item-meta" style="margin-top:8px;">아직 답변이 없습니다.</div>`;
+
+      let adminReply = '';
+      if (isAdmin) {
+        adminReply = `
+          <div style="margin-top:14px; padding-top:12px; border-top:1px dashed #E2E8F0;">
+            <div class="input-group">
+              <label>답변 작성</label>
+              <textarea id="inquiry-reply-input" class="transparent-input sub-title-input" style="min-height:80px; border:1px solid #CBD5E1; background:white; padding:10px; border-radius:8px;" placeholder="답변을 입력해 주세요">${escapeHtml(q.reply || '')}</textarea>
+            </div>
+            <div class="input-group">
+              <label>운영자 비밀번호 확인</label>
+              <input type="password" id="inquiry-reply-pw" placeholder="비밀번호 재입력" autocomplete="new-password">
+            </div>
+            <button type="button" class="btn-sm amber" onclick="replyInquiry('${q.id}')">답변 저장</button>
+          </div>
+        `;
+      }
+
+      detail.innerHTML = `
+        <div class="board-item-date" style="margin-bottom:6px;">${escapeHtml(q.date)}${isAdmin ? ' · ' + escapeHtml(q.userName) + ' (' + escapeHtml(q.userId) + ')' : ''}</div>
+        <h4>${escapeHtml(q.title)}</h4>
+        <div class="detail-body">${escapeHtml(q.content)}</div>
+        ${replyHtml}
+        ${adminReply}
+      `;
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function replyInquiry(inquiryId) {
+      const reply = document.getElementById('inquiry-reply-input').value.trim();
+      const password = document.getElementById('inquiry-reply-pw').value;
+      if (!reply) { showAlert('안내', '답변 내용을 입력해 주세요.', false); return; }
+      if (!password) { showAlert('안내', '비밀번호를 입력해 주세요.', false); return; }
+      try {
+        const res = await gasPost({ action: 'replyInquiry', id: currentUserId, password, inquiryId, reply });
+        if (!res.success) { showAlert('실패', res.message, false); return; }
+        inquirySessionPw = password;
+        showAlert('완료', res.message, true);
+        loadInquiries();
+      } catch (e) {
+        showAlert('통신 오류', '답변 저장 중 오류가 발생했습니다.', false);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     function saveGlobalData() {
