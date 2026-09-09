@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <title>스마트 재무 대시보드</title>
@@ -49,7 +49,17 @@
     .export-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
     .pc-only { display: inline-flex; }
     .chart-wrap { position: relative; width: 100%; height: 280px; margin-top: 8px; }
-    .chart-legend-note { font-size: 12px; color: #94A3B8; font-weight: 500; }
+    .top-period { display: flex; gap: 15px; align-items: center; }
+    .top-period .top-label { margin-left: 0; }
+    .top-period .top-label.ml { margin-left: 10px; }
+    .main-table-panel { min-width: 0; }
+    .scroll-hint {
+      display: none;
+      font-size: 11px; color: #64748B; font-weight: 600;
+      margin: 0 0 8px; padding: 8px 10px; border-radius: 8px;
+      background: #EFF6FF; border: 1px solid #BFDBFE; text-align: center;
+    }
+    .summary-card > .btn-group { order: 10; }
 
     /* 공지 / 문의 패널 */
     .board-list { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
@@ -170,40 +180,160 @@
     .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: 600; color: #94A3B8; }
     .tab.active { color: #3B82F6; border-bottom: 2px solid #3B82F6; margin-bottom: -2px; }
     
-    /* PC: 기존 1400 레이아웃 유지 / 모바일·태블릿: 반응형 */
+    /* ===== 반응형: PC(>1100)는 기존 유지 / 태블릿·폰 세로·가로 분리 ===== */
     @media screen and (max-width: 1100px) {
       body { padding: 12px; }
-      .middle-section { grid-template-columns: 1fr; }
-      .summary-card { flex-direction: row; flex-wrap: wrap; }
-      .summary-card > .summary-box { flex: 1 1 200px; }
-      .summary-card > .btn-group { flex: 1 1 100%; flex-direction: row; }
-      .summary-amount { font-size: 22px; }
+      .pc-only { display: none !important; }
       .history-grid { grid-template-columns: repeat(2, 1fr); }
       .chart-wrap { height: 240px; }
-      .pc-only { display: none !important; }
+      .scroll-hint { display: block; }
     }
+
+    /* 스마트폰·좁은 화면 세로: 한 열로 PC 흐름(표 → 요약 → 결산 → 차트) 유지 */
+    @media screen and (max-width: 1100px) and (orientation: portrait) {
+      .middle-section { grid-template-columns: 1fr; gap: 12px; }
+      .summary-card {
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        gap: 12px;
+        text-align: center;
+      }
+      .summary-card > .summary-box {
+        flex: none !important;
+        width: 100% !important;
+        max-width: 100%;
+      }
+      .summary-card > .btn-group {
+        flex: none !important;
+        width: 100% !important;
+        flex-direction: column !important;
+        order: 99;
+        margin-top: 4px;
+      }
+      .summary-amount { font-size: 22px; }
+    }
+
+    /* 가로 모드: PC처럼 표 | 요약 2열 (공간 허용 시) */
+    @media screen and (max-width: 1100px) and (orientation: landscape) {
+      body { padding: 8px 10px; }
+      .middle-section {
+        grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.9fr);
+        gap: 10px;
+        align-items: start;
+      }
+      .summary-card {
+        flex-direction: column !important;
+        gap: 8px;
+        padding: 12px;
+      }
+      .summary-box { padding: 12px 10px; }
+      .summary-amount { font-size: 18px; }
+      .summary-title { font-size: 12px; margin-bottom: 4px; }
+      .btn { padding: 11px; font-size: 13px; }
+      .btn-group { gap: 6px; }
+      .chart-wrap { height: 200px; }
+      .top-bar { padding: 8px 12px; margin-bottom: 10px; }
+    }
+
     @media screen and (max-width: 720px) {
-      body { padding: 10px; }
-      .login-card { padding: 28px 20px; border-radius: 16px; }
-      .top-bar { padding: 12px; gap: 10px; }
-      .top-bar > div:first-child { width: 100%; display: flex; gap: 10px; }
-      .top-bar > div:first-child > div { flex: 1; }
-      .top-label { margin-left: 0 !important; }
-      .top-user-area { margin-left: 0; width: 100%; justify-content: flex-start; }
-      .user-badge { width: 100%; }
-      .table-actions { flex-wrap: wrap; }
-      .table-actions .btn-action { margin-right: 0 !important; }
-      .summary-card { flex-direction: column; }
-      .summary-card > .btn-group { flex-direction: column; }
-      .btn { padding: 14px; font-size: 14px; }
+      body { padding: 8px; }
+      .login-card { padding: 28px 20px; border-radius: 16px; max-width: 100%; }
+      .card { padding: 14px; border-radius: 12px; margin-bottom: 12px; }
+      .top-bar {
+        padding: 10px 12px; gap: 10px; margin-bottom: 12px;
+        flex-direction: column; align-items: stretch;
+      }
+      .top-period { width: 100%; gap: 8px; }
+      .top-period > div { flex: 1; min-width: 0; }
+      .top-period .top-label.ml { margin-left: 0; }
+      .top-bar select { width: 100%; font-size: 13px; padding: 8px; }
+      .top-user-area {
+        margin-left: 0; width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .top-user-area .user-badge {
+        grid-column: 1 / -1;
+        width: 100%;
+        font-size: 13px;
+        padding: 6px 2px;
+      }
+      .top-user-area .btn-top {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+      .top-user-area .btn-top.logout { grid-column: 1 / -1; }
+      .table-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .table-actions .btn-action {
+        width: 100%;
+        margin-right: 0 !important;
+        padding: 11px 8px;
+        font-size: 12px;
+      }
+      .table-actions .btn-action:first-child {
+        grid-column: 1 / -1;
+        background: #3B82F6;
+      }
+      .table-scroll-card,
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+      }
+      .desktop-table {
+        min-width: 880px;
+        width: max-content;
+        table-layout: auto;
+      }
+      .desktop-table th,
+      .desktop-table td { padding: 10px 8px; font-size: 12px; }
+      .input-money { font-size: 13px; min-width: 88px; padding: 8px; }
+      .btn-add-money { width: 32px; height: 32px; }
+      .summary-amount { font-size: 24px; }
+      .input-target { font-size: 16px; }
+      .btn { padding: 14px; font-size: 14px; min-height: 48px; }
+      .section-title { font-size: 15px; line-height: 1.4; }
+      .monthly-table { min-width: 720px; width: max-content; }
+      .monthly-table th, .monthly-table td { padding: 10px 8px; font-size: 12px; }
       .history-grid { grid-template-columns: 1fr; }
-      .modal-content { padding: 22px 16px; border-radius: 16px; }
+      .modal-overlay { padding: 12px; align-items: flex-end; }
+      .modal-content { padding: 20px 16px; border-radius: 16px 16px 0 0; max-height: 88vh; }
       .modal-content.large { max-width: 100%; }
-      .section-title { font-size: 15px; }
-      .desktop-table { min-width: 760px; }
-      .desktop-table th, .desktop-table td { padding: 10px 6px; font-size: 12px; }
-      .input-money { font-size: 13px; min-width: 70px; padding: 8px; }
       .chart-wrap { height: 220px; }
+      .global-tooltip { max-width: min(280px, calc(100vw - 24px)); font-size: 13px; padding: 12px 14px; }
+    }
+
+    /* 아주 좁은 세로 폰 */
+    @media screen and (max-width: 400px) and (orientation: portrait) {
+      .summary-amount { font-size: 20px; }
+      .btn-manage { font-size: 13px; }
+      .top-user-area { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* 가로 + 짧은 높이(폰 가로): 상단 더 압축, 표|요약 유지 */
+    @media screen and (max-width: 960px) and (orientation: landscape) and (max-height: 500px) {
+      .top-bar { flex-direction: row; flex-wrap: wrap; align-items: center; }
+      .top-period { width: auto; flex: 1; }
+      .top-user-area {
+        display: flex; flex-wrap: wrap; width: auto; margin-left: auto;
+        grid-template-columns: none;
+      }
+      .top-user-area .user-badge,
+      .top-user-area .btn-top.logout { grid-column: auto; width: auto; }
+      .top-user-area .btn-top { width: auto; padding: 6px 10px; }
+      .table-actions { display: flex; flex-wrap: wrap; }
+      .table-actions .btn-action:first-child { grid-column: auto; width: auto; }
+      .summary-amount { font-size: 16px; }
+      .chart-wrap { height: 180px; }
     }
   </style>
 </head>
@@ -356,10 +486,10 @@
 
   <div id="dashboard-view">
     <div class="top-bar">
-      <div style="display: flex; gap: 15px; align-items: center;">
+      <div class="top-period">
         <div><span class="top-label">조회 연도</span><select id="select-year" onchange="switchMonth()"></select></div>
         <div>
-          <span class="top-label" style="margin-left: 10px;">선택 월</span>
+          <span class="top-label ml">선택 월</span>
           <select id="select-month" onchange="switchMonth()">
             <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
             <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
@@ -378,12 +508,13 @@
     </div>
 
     <div class="middle-section">
-      <div>
+      <div class="main-table-panel">
         <div class="table-actions">
           <button class="btn-action" style="background: #3B82F6; margin-right: auto;" onclick="loadPreviousMonthBalances()">📥 이전 달 잔고 불러오기</button>
           <button class="btn-action" onclick="addRow()">+ 항목 추가</button>
           <button class="btn-action delete" onclick="deleteSelectedRows()">- 항목 제거</button>
         </div>
+        <div class="scroll-hint">↔ 표는 좌우로 밀어 전체 항목을 볼 수 있습니다</div>
         <div class="card table-scroll-card" id="table-wrapper"></div>
       </div>
 
@@ -416,7 +547,8 @@
           <button type="button" class="btn-top" onclick="exportExcel()">엑셀 내보내기</button>
         </div>
       </div>
-      <div class="table-responsive" style="margin-top:12px;">
+      <div class="scroll-hint" style="margin-top:10px;">↔ 결산 표도 좌우로 밀어 1~12월을 확인하세요</div>
+      <div class="table-responsive" style="margin-top:8px;">
         <table class="monthly-table" id="monthly-table">
           <thead><tr id="monthly-headers"></tr></thead>
           <tbody><tr class="row-income" id="monthly-income-row"></tr><tr class="row-expense" id="monthly-expense-row"></tr></tbody>
@@ -1068,7 +1200,11 @@
         tip.className = 'global-tooltip';
         document.body.appendChild(tip);
       }
-      const hide = () => { tip.classList.remove('show', 'arrow-top'); };
+      let sticky = false;
+      const hide = () => {
+        tip.classList.remove('show', 'arrow-top');
+        sticky = false;
+      };
       const showFor = (container) => {
         const src = container.querySelector('.tooltip-content');
         if (!src) return;
@@ -1090,16 +1226,31 @@
         tip.style.top = top + 'px';
       };
       document.addEventListener('mouseover', (e) => {
+        if (window.matchMedia('(hover: none)').matches) return;
         const c = e.target.closest('.tooltip-container');
         if (c) showFor(c);
       });
       document.addEventListener('mouseout', (e) => {
+        if (window.matchMedia('(hover: none)').matches) return;
         const c = e.target.closest('.tooltip-container');
         if (!c) return;
         if (e.relatedTarget && c.contains(e.relatedTarget)) return;
         hide();
       });
-      document.addEventListener('scroll', hide, true);
+      // 스마트폰: 💡 탭하면 설명 표시 / 다시 탭·바깥 탭하면 닫기
+      document.addEventListener('click', (e) => {
+        const c = e.target.closest('.tooltip-container');
+        if (c) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (sticky && tip.classList.contains('show')) { hide(); return; }
+          sticky = true;
+          showFor(c);
+          return;
+        }
+        if (sticky) hide();
+      }, true);
+      document.addEventListener('scroll', () => { if (sticky || tip.classList.contains('show')) hide(); }, true);
       window.addEventListener('resize', hide);
     }
 
