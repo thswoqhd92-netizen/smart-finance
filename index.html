@@ -88,7 +88,6 @@
     .seg-tab.active { background: white; color: #2563EB; border-color: #BFDBFE; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
     
     .middle-section { display: grid; grid-template-columns: 2.8fr 1fr; gap: 16px; }
-    .table-actions { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 8px; }
     .btn-action { padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; color: white; background: #64748B; transition: 0.2s; }
     .btn-action:hover { background: #475569; }
     .btn-action.delete { background: #EF4444; }
@@ -105,9 +104,69 @@
     .input-money { padding: 10px; border-radius: 8px; width: 100%; min-width: 90px; text-align: right; font-weight: 700; font-size: 14px; outline: none; transition: 0.2s; }
     .input-balance { background: #FFFFFF; border: 1px solid #CBD5E1; }
     .input-balance:focus { border-color: #3B82F6; }
+    .input-balance.auto-filled {
+      background: #EFF6FF;
+      border-color: #93C5FD;
+      color: #1E3A8A;
+    }
     .input-income { background: #FFFFFF; border: 1px solid #93C5FD; color: #1D4ED8; }
     .input-expense { background: #FFFFFF; border: 1px solid #FCA5A5; color: #B91C1C; }
     .auto-calc-box { background: #F1F5F9; padding: 12px; border-radius: 10px; display: block; width: 100%; text-align: right; }
+    .table-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .carry-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 220px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .carry-banner.is-auto {
+      background: #EFF6FF;
+      border-color: #BFDBFE;
+    }
+    .carry-banner.is-manual {
+      background: #F8FAFC;
+      border-color: #E2E8F0;
+    }
+    .carry-status-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      line-height: 1.35;
+    }
+    .carry-banner.is-auto .carry-status-text { color: #1D4ED8; }
+    .btn-carry-refresh {
+      background: white !important;
+      color: #334155 !important;
+      border: 1px solid #CBD5E1 !important;
+      padding: 6px 10px !important;
+      font-size: 11px !important;
+      white-space: nowrap;
+    }
+    .btn-carry-refresh:hover { background: #F1F5F9 !important; }
+    .table-action-right { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+    .save-status {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748B;
+      text-align: center;
+      min-height: 18px;
+    }
+    .save-status.ok { color: #15803D; }
+    .save-status.warn { color: #B45309; }
+    .save-status.err { color: #B91C1C; }
+    .save-status.sync { color: #1D4ED8; }
     
     .btn-add-money { background: #E2E8F0; color: #475569; border: none; border-radius: 6px; width: 28px; height: 28px; font-weight: 800; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
     .no-container { display: flex; align-items: center; justify-content: center; height: 100%; gap: 8px; }
@@ -142,10 +201,20 @@
     .progress-container { background: #E2E8F0; border-radius: 10px; height: 12px; width: 100%; margin-top: 15px; margin-bottom: 8px; overflow: hidden; }
     .progress-bar { background: linear-gradient(90deg, #10B981 0%, #34D399 100%); height: 100%; width: 0%; border-radius: 10px; transition: width 0.5s ease; }
     .progress-text { font-size: 13px; color: #10B981; font-weight: 700; }
-    .btn-group { display: flex; gap: 10px; flex-direction: column; margin-top: auto; }
+    .btn-group { display: flex; gap: 8px; flex-direction: column; margin-top: auto; }
     .btn { padding: 16px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-    .btn-income { background: #3B82F6; }
-    .btn-manage { background: #64748B; }
+    .btn-income { background: #2563EB; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.22); }
+    .btn-income:hover { background: #1D4ED8; }
+    .btn-income:disabled { background: #94A3B8; box-shadow: none; cursor: not-allowed; }
+    .btn-manage {
+      background: white;
+      color: #475569;
+      border: 1px solid #CBD5E1;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-manage:hover { background: #F8FAFC; color: #0F172A; }
     .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid #E2E8F0; }
     .monthly-table { width: 100%; border-collapse: collapse; min-width: 800px; }
     .monthly-table th { background: #F8FAFC; color: #64748B; padding: 12px; font-size: 13px; border-bottom: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; }
@@ -489,10 +558,10 @@
   <div id="dashboard-view">
     <div class="top-bar">
       <div class="top-period">
-        <div><span class="top-label">조회 연도</span><select id="select-year" onchange="switchMonth()"></select></div>
+        <div><span class="top-label">조회 연도</span><select id="select-year" onchange="requestPeriodChange()"></select></div>
         <div>
           <span class="top-label ml">선택 월</span>
-          <select id="select-month" onchange="switchMonth()">
+          <select id="select-month" onchange="requestPeriodChange()">
             <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
             <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
             <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
@@ -512,9 +581,14 @@
     <div class="middle-section">
       <div class="main-table-panel">
         <div class="table-actions">
-          <button class="btn-action" style="background: #3B82F6; margin-right: auto;" onclick="loadPreviousMonthBalances()">📥 이전 달 잔고 불러오기</button>
-          <button class="btn-action" onclick="addRow()">+ 항목 추가</button>
-          <button class="btn-action delete" onclick="deleteSelectedRows()">- 항목 제거</button>
+          <div class="carry-banner" id="carry-banner">
+            <span class="carry-status-text" id="carry-status-text">달을 바꾸면 전달 최종잔고가 자동 반영됩니다</span>
+            <button type="button" class="btn-action btn-carry-refresh" onclick="loadPreviousMonthBalances(true)">다시 불러오기</button>
+          </div>
+          <div class="table-action-right">
+            <button class="btn-action" onclick="addRow()">+ 항목 추가</button>
+            <button class="btn-action delete" onclick="deleteSelectedRows()">- 항목 제거</button>
+          </div>
         </div>
         <div class="card table-scroll-card" id="table-wrapper"></div>
       </div>
@@ -525,18 +599,19 @@
           <div class="summary-amount" style="color: #3B82F6;" id="temp-month-sum">0 원</div>
         </div>
         <div class="summary-box wallet-box" onclick="openWalletModal()">
-          <div class="summary-title">나의 총 자산 ⚙️</div>
+          <div class="summary-title">나의 총 자산</div>
           <div class="summary-amount" id="final-wallet-display">0 원</div>
         </div>
         <div class="summary-box" style="background: white; border-color: #86EFAC;">
-          <div class="summary-title" style="color: #166534;">🎯 목표 금액 설정</div>
+          <div class="summary-title" style="color: #166534;">목표 금액</div>
           <input type="text" class="input-target" id="target-amount" value="300,000,000" oninput="formatNumber(this); updateTargetPercent(); saveGlobalData();">
           <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
           <div class="progress-text" id="progress-text">0% 달성!</div>
         </div>
         <div class="btn-group">
-          <button class="btn btn-income" onclick="saveMonthlyData()">✅ 저장하기</button>
-          <button class="btn btn-manage" onclick="openHistoryModal()">📝 내역 관리 (과거내역 수정)</button>
+          <button class="btn btn-income" id="btn-save-month" onclick="saveMonthlyData()">저장하기</button>
+          <div class="save-status" id="save-status">입력 후 저장하기를 눌러 주세요</div>
+          <button class="btn btn-manage" onclick="openHistoryModal()">내역 관리</button>
         </div>
       </div>
     </div>
@@ -761,7 +836,10 @@
     let inquiryCache = [];
     let inquirySessionPw = '';
     let monthlyChart = null;
-    let badgePollTimer = null;  
+    let badgePollTimer = null;
+    let isDirty = false;
+    let suppressDirty = false;
+    let balanceEditBound = false;  
 
     window.onload = () => {
       initYearDropdown();
@@ -1736,6 +1814,202 @@
         }); 
     }
 
+    function setSaveStatus(text, type) {
+      const el = document.getElementById('save-status');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'save-status' + (type ? (' ' + type) : '');
+    }
+
+    function markDirty() {
+      if (suppressDirty) return;
+      isDirty = true;
+      setSaveStatus('저장되지 않은 변경이 있습니다', 'warn');
+    }
+
+    function clearDirty() {
+      isDirty = false;
+    }
+
+    function setCarryStatus(text, mode) {
+      const banner = document.getElementById('carry-banner');
+      const label = document.getElementById('carry-status-text');
+      if (label) label.textContent = text;
+      if (banner) {
+        banner.classList.remove('is-auto', 'is-manual');
+        if (mode) banner.classList.add(mode);
+      }
+    }
+
+    function getAdjacentMonth(y, m, delta) {
+      let yy = parseInt(y, 10);
+      let mm = parseInt(m, 10) + delta;
+      while (mm < 1) { mm += 12; yy -= 1; }
+      while (mm > 12) { mm -= 12; yy += 1; }
+      return { y: String(yy), m: String(mm), key: yy + '-' + mm, label: yy + '년 ' + mm + '월' };
+    }
+
+    function getMonthHtml(key) {
+      return appData.drafts[key] || (appData.snapshots && appData.snapshots[key]) || null;
+    }
+
+    function extractFinalBalancesFromHtml(html) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      return Array.from(tempDiv.querySelectorAll('.row-result')).map(el => String(el.innerText || '').trim());
+    }
+
+    function areCurrentBalancesEmpty() {
+      const inputs = document.querySelectorAll('#table-wrapper .input-balance');
+      if (!inputs.length) return true;
+      return Array.from(inputs).every(inp => !String(inp.value || '').trim());
+    }
+
+    function applyBalancesToCurrent(balanceTexts, options) {
+      const opts = options || {};
+      const overwrite = !!opts.overwrite;
+      const markAuto = opts.markAuto !== false;
+      const currBalances = document.querySelectorAll('#table-wrapper .input-balance');
+      let applied = 0;
+      currBalances.forEach((balInput, idx) => {
+        if (!balanceTexts[idx]) return;
+        const empty = !String(balInput.value || '').trim();
+        if (!overwrite && !empty) return;
+        balInput.value = balanceTexts[idx];
+        balInput.setAttribute('value', balInput.value);
+        if (markAuto) {
+          balInput.classList.add('auto-filled');
+          balInput.title = '전달 최종잔고에서 자동 반영됨 (직접 수정 가능)';
+        } else {
+          balInput.classList.remove('auto-filled');
+          balInput.title = '';
+        }
+        applied += 1;
+      });
+      return applied;
+    }
+
+    function bindBalanceEditEvents() {
+      if (balanceEditBound) return;
+      const w = document.getElementById('table-wrapper');
+      if (!w) return;
+      balanceEditBound = true;
+      w.addEventListener('input', (e) => {
+        const t = e.target;
+        if (!t) return;
+        if (t.classList && t.classList.contains('input-balance')) {
+          t.classList.remove('auto-filled');
+          t.title = '';
+        }
+        if (t.matches && t.matches('input, textarea')) markDirty();
+      });
+    }
+
+    /** 빈 기존잔고만 전달 최종잔고로 자동 채움. 기존 입력값은 덮어쓰지 않음 */
+    function autoCarryPreviousBalances(force) {
+      const y = document.getElementById('select-year').value;
+      const m = document.getElementById('select-month').value;
+      const prev = getAdjacentMonth(y, m, -1);
+      const prevHTML = getMonthHtml(prev.key);
+      if (!prevHTML) {
+        setCarryStatus('전달 데이터가 없어 자동 이월할 잔고가 없습니다', 'is-manual');
+        return { ok: false, reason: 'no-prev' };
+      }
+      const finals = extractFinalBalancesFromHtml(prevHTML);
+      if (!finals.length || finals.every(v => !v)) {
+        setCarryStatus('전달 최종잔고를 찾지 못했습니다', 'is-manual');
+        return { ok: false, reason: 'no-finals' };
+      }
+      if (!force && !areCurrentBalancesEmpty()) {
+        setCarryStatus('이번 달 기존잔고를 유지 중입니다 · 필요하면 다시 불러오기', 'is-manual');
+        return { ok: false, reason: 'already-filled' };
+      }
+      const applied = applyBalancesToCurrent(finals, { overwrite: !!force, markAuto: true });
+      if (!applied) {
+        setCarryStatus('반영할 잔고가 없습니다', 'is-manual');
+        return { ok: false, reason: 'none-applied' };
+      }
+      setCarryStatus(prev.label + ' 최종잔고 → 이번 달 기존잔고 자동 반영', 'is-auto');
+      return { ok: true, prev: prev, applied: applied };
+    }
+
+    /** 저장 시 다음 달 draft를 미리 준비(이미 작성된 다음 달은 덮어쓰지 않음) */
+    function prepareNextMonthDraft(y, m) {
+      const next = getAdjacentMonth(y, m, 1);
+      const existing = getMonthHtml(next.key);
+      if (existing) {
+        const temp = document.createElement('div');
+        temp.innerHTML = existing;
+        const bals = temp.querySelectorAll('.input-balance');
+        const hasBalance = Array.from(bals).some(inp => String(inp.value || '').trim());
+        const hasIncome = Array.from(temp.querySelectorAll('.master-income, .input-expense')).some(inp => {
+          const v = String(inp.value || '').replace(/,/g, '').trim();
+          return v && v !== '0';
+        });
+        if (hasBalance || hasIncome) return false;
+      }
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = getCleanTableHtml();
+      const finals = Array.from(document.querySelectorAll('#table-wrapper .row-result')).map(el => String(el.innerText || '').trim());
+
+      tempDiv.querySelectorAll('.master-income, .input-expense').forEach(inp => {
+        inp.value = '';
+        inp.setAttribute('value', '');
+      });
+      tempDiv.querySelectorAll('.sub-income').forEach(inp => {
+        inp.value = '0';
+        inp.setAttribute('value', '0');
+      });
+      tempDiv.querySelectorAll('.input-balance').forEach((inp, idx) => {
+        const val = finals[idx] || '';
+        inp.value = val;
+        inp.setAttribute('value', val);
+        if (val) {
+          inp.classList.add('auto-filled');
+          inp.setAttribute('title', '전달 최종잔고에서 자동 반영됨 (직접 수정 가능)');
+        }
+      });
+      tempDiv.querySelectorAll('.item-group').forEach((group, idx) => {
+        const bal = finals[idx] || '0';
+        const fDisplay = group.querySelector('.final-balance-display');
+        if (fDisplay) fDisplay.innerText = bal;
+        const rs = group.querySelector('.row-result');
+        if (rs) rs.innerText = bal;
+      });
+
+      appData.drafts[next.key] = tempDiv.innerHTML;
+      return true;
+    }
+
+    function getRatioTotal() {
+      let t = 0;
+      document.querySelectorAll('#table-wrapper .sub-item .ratio-input').forEach(i => {
+        const v = parseFloat(i.value);
+        if (!isNaN(v)) t += v;
+      });
+      return t;
+    }
+
+    function revertPeriodSelect() {
+      if (!currentKey) return;
+      const parts = currentKey.split('-');
+      if (parts.length < 2) return;
+      document.getElementById('select-year').value = parts[0];
+      document.getElementById('select-month').value = parts[1];
+    }
+
+    function requestPeriodChange() {
+      if (isDirty && currentKey) {
+        const ok = confirm('저장하지 않은 변경이 있습니다.\n달을 이동할까요?\n(현재 입력은 임시 저장됩니다)');
+        if (!ok) {
+          revertPeriodSelect();
+          return;
+        }
+      }
+      switchMonth();
+    }
+
     function saveDraft() { 
         if(!currentKey) return; 
         syncDOMValues(); 
@@ -1749,89 +2023,78 @@
         tempDiv.querySelectorAll('.row-result, .final-balance-display').forEach(sp => { sp.innerText = '0'; });
         appData.template = tempDiv.innerHTML;
 
+        markDirty();
         saveGlobalData(); 
     }
 
     function switchMonth() { 
-        if(currentKey) saveDraft(); 
-        const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; 
-        currentKey = `${y}-${m}`; 
-        
-        if(!appData.summary[y]) appData.summary[y] = { inc: Array(12).fill(0), exp: Array(12).fill(0) }; 
-        
-        const w = document.getElementById('table-wrapper'); 
-        if(appData.drafts[currentKey]) { 
-            w.innerHTML = appData.drafts[currentKey]; 
-        } else if(appData.snapshots && appData.snapshots[currentKey]) {
-            w.innerHTML = appData.snapshots[currentKey];
-            appData.drafts[currentKey] = appData.snapshots[currentKey];
-        } else if(appData.template) {
-            w.innerHTML = appData.template;
-        } else { 
-            w.innerHTML = document.getElementById('default-table-template').innerHTML; 
-        } 
-        
-        // ★ 과거 데이터 마이그레이션: 툴팁 위치를 td에서 th(헤더)로 이동시키고, 예전 타이틀을 새 타이틀로 변경
-        w.querySelectorAll('th').forEach(th => {
-            if (th.innerText.includes('수입 입력') && !th.querySelector('.tooltip-container')) {
-                th.innerHTML = `수입 입력 <span style="color:#3B82F6;">(+)</span> <div class="tooltip-container"><span class="tooltip-icon">💡</span><div class="tooltip-content">메인 수입을 입력하면 설정한 비율에 맞춰<br>자동으로 각 통장에 분배됩니다.</div></div>`;
-            }
-            if (th.innerText.includes('최종잔고')) { th.innerText = '기존 통장잔고'; }
-            if (th.innerText.trim() === '결산') { th.innerText = '최종 통장잔고'; }
-        });
-        w.querySelectorAll('td').forEach(td => {
-            if (td.getAttribute('data-label') === '최종잔고') td.setAttribute('data-label', '기존 통장잔고');
-            if (td.getAttribute('data-label') === '결산') td.setAttribute('data-label', '최종 통장잔고');
-        });
-        
-        // td에 남아있던 예전 툴팁 강제 제거 (칸 넓어지게 복구)
-        w.querySelectorAll('td[data-label="수입 입력"] .tooltip-container').forEach(el => el.remove());
+        suppressDirty = true;
+        try {
+          if(currentKey) saveDraft(); 
+          const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value; 
+          currentKey = `${y}-${m}`; 
+          
+          if(!appData.summary[y]) appData.summary[y] = { inc: Array(12).fill(0), exp: Array(12).fill(0) }; 
+          
+          const w = document.getElementById('table-wrapper'); 
+          if(appData.drafts[currentKey]) { 
+              w.innerHTML = appData.drafts[currentKey]; 
+          } else if(appData.snapshots && appData.snapshots[currentKey]) {
+              w.innerHTML = appData.snapshots[currentKey];
+              appData.drafts[currentKey] = appData.snapshots[currentKey];
+          } else if(appData.template) {
+              w.innerHTML = appData.template;
+          } else { 
+              w.innerHTML = document.getElementById('default-table-template').innerHTML; 
+          } 
+          
+          // ★ 과거 데이터 마이그레이션: 툴팁 위치를 td에서 th(헤더)로 이동시키고, 예전 타이틀을 새 타이틀로 변경
+          w.querySelectorAll('th').forEach(th => {
+              if (th.innerText.includes('수입 입력') && !th.querySelector('.tooltip-container')) {
+                  th.innerHTML = `수입 입력 <span style="color:#3B82F6;">(+)</span> <div class="tooltip-container"><span class="tooltip-icon">💡</span><div class="tooltip-content">메인 수입을 입력하면 설정한 비율에 맞춰<br>자동으로 각 통장에 분배됩니다.</div></div>`;
+              }
+              if (th.innerText.includes('최종잔고')) { th.innerText = '기존 통장잔고'; }
+              if (th.innerText.trim() === '결산') { th.innerText = '최종 통장잔고'; }
+          });
+          w.querySelectorAll('td').forEach(td => {
+              if (td.getAttribute('data-label') === '최종잔고') td.setAttribute('data-label', '기존 통장잔고');
+              if (td.getAttribute('data-label') === '결산') td.setAttribute('data-label', '최종 통장잔고');
+          });
+          
+          // td에 남아있던 예전 툴팁 강제 제거 (칸 넓어지게 복구)
+          w.querySelectorAll('td[data-label="수입 입력"] .tooltip-container').forEach(el => el.remove());
 
-        loadSummaryTable(y); 
-        checkRatios(); 
-        distributeIncome(); 
-        recalcFinalWallet(); 
-        scheduleFitMobileTables();
+          bindBalanceEditEvents();
+          autoCarryPreviousBalances(false);
+
+          loadSummaryTable(y); 
+          checkRatios(); 
+          distributeIncome(); 
+          recalcFinalWallet(); 
+          scheduleFitMobileTables();
+          clearDirty();
+          setSaveStatus('입력 후 저장하기를 눌러 주세요');
+        } finally {
+          suppressDirty = false;
+        }
     }
 
-    function loadPreviousMonthBalances() {
-        const y = parseInt(document.getElementById('select-year').value);
-        const m = parseInt(document.getElementById('select-month').value);
-
-        let prevY = y;
-        let prevM = m - 1;
-        if (prevM === 0) {
-            prevY = y - 1;
-            prevM = 12;
+    function loadPreviousMonthBalances(force) {
+        const result = autoCarryPreviousBalances(force !== false);
+        if (!result.ok) {
+          if (result.reason === 'no-prev') {
+            const y = document.getElementById('select-year').value;
+            const m = document.getElementById('select-month').value;
+            const prev = getAdjacentMonth(y, m, -1);
+            showAlert('안내', prev.label + '의 저장된 데이터가 없습니다.\n먼저 이전 달의 데이터를 작성·저장해 주세요.', false);
+          } else if (result.reason === 'no-finals' || result.reason === 'none-applied') {
+            showAlert('안내', '이전 달 데이터에서 잔고를 찾을 수 없습니다.', false);
+          }
+          return;
         }
-        const prevKey = `${prevY}-${prevM}`;
-
-        let prevHTML = appData.drafts[prevKey] || appData.snapshots[prevKey];
-        if (!prevHTML) {
-            showAlert('안내', `${prevY}년 ${prevM}월의 저장된 데이터가 없습니다.\n먼저 이전 달의 데이터를 작성해 주세요.`, false);
-            return;
-        }
-
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = prevHTML;
-
-        const prevResults = tempDiv.querySelectorAll('.row-result');
-        const currBalances = document.querySelectorAll('#table-wrapper .input-balance');
-
-        if (prevResults.length === 0) {
-             showAlert('안내', '이전 달 데이터에서 잔고를 찾을 수 없습니다.', false);
-             return;
-        }
-
-        currBalances.forEach((balInput, idx) => {
-            if (prevResults[idx]) {
-                balInput.value = prevResults[idx].innerText;
-                balInput.setAttribute('value', balInput.value);
-            }
-        });
-
         calculateTempTotals();
-        showAlert('불러오기 완료', `${prevY}년 ${prevM}월의 '최종 통장잔고' 데이터를\n현재 달의 '기존 통장잔고'로 성공적으로 가져왔습니다.`);
+        markDirty();
+        showAlert('불러오기 완료', result.prev.label + ' 최종잔고를\n이번 달 기존 통장잔고로 반영했습니다.');
     }
 
     function loadSummaryTable(year) {
@@ -1935,8 +2198,25 @@
     function deleteSelectedRows() { const cbs = document.querySelectorAll('#table-wrapper .row-checkbox'); let del = []; cbs.forEach(cb => { if(cb.checked) del.push(cb.closest('.sub-item')); }); if(del.length === 0) { showAlert('안내', '제거하실 항목의 좌측 체크박스를 먼저 선택해 주세요.', false); return; } const subs = document.querySelectorAll('#table-wrapper .sub-item'); if(subs.length - del.length < 1) { showAlert('경고', '최소 1개의 항목은 남아있어야 합니다.', false); return; } del.forEach(item => item.remove()); updateRowNumbers(); checkRatios(); distributeIncome(); scheduleFitMobileTables(); }
     function updateRowNumbers() { document.querySelectorAll('#table-wrapper .sub-item').forEach((item, idx) => { item.querySelector('.row-no').innerText = idx + 2; }); saveDraft(); }
     async function saveMonthlyData() {
-      syncDOMValues();
       const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value;
+      const ratioTotal = getRatioTotal();
+      if (Math.round(ratioTotal) !== 100) {
+        const go = confirm('통장 비율 합계가 ' + ratioTotal + '% 입니다.\n(권장: 100%)\n그래도 저장할까요?');
+        if (!go) return;
+      }
+
+      const btn = document.getElementById('btn-save-month');
+      if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
+      setSaveStatus('클라우드에 저장하는 중...', 'sync');
+
+      suppressDirty = true;
+      try {
+        distributeIncome();
+        syncDOMValues();
+      } finally {
+        suppressDirty = false;
+      }
+
       const k = `${y}-${m}`;
       const html = getCleanTableHtml();
       appData.snapshots[k] = html;
@@ -1948,13 +2228,24 @@
       if (!appData.summary[y]) appData.summary[y] = { inc: Array(12).fill(0), exp: Array(12).fill(0) };
       appData.summary[y].inc[parseInt(m)-1] = ti;
       appData.summary[y].exp[parseInt(m)-1] = te;
+
+      const nextPrepared = prepareNextMonthDraft(y, m);
       loadSummaryTable(y);
       recalcFinalWallet();
+
       try {
         await saveGlobalData(true);
-        showAlert('결산 저장 완료', `${y}년 ${m}월 표가 클라우드에 저장되었습니다.\n프로그램을 종료해도 다시 불러올 수 있습니다.`);
+        clearDirty();
+        const next = getAdjacentMonth(y, m, 1);
+        let msg = y + '년 ' + m + '월 표가 클라우드에 저장되었습니다.';
+        if (nextPrepared) msg += '\n' + next.label + ' 기존잔고도 미리 준비해 두었습니다.';
+        setSaveStatus('클라우드 저장 완료', 'ok');
+        showAlert('결산 저장 완료', msg);
       } catch (e) {
+        setSaveStatus('클라우드 저장 실패 · 다시 저장해 주세요', 'err');
         showAlert('저장 경고', '기기에 임시 저장은 되었습니다.\n인터넷 연결을 확인한 뒤 저장하기를 한 번 더 눌러 주세요.', false);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '저장하기'; }
       }
     }
     
