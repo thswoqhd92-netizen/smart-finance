@@ -40,6 +40,18 @@
     .btn-top:hover { background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8; }
     .btn-top.logout { color: #DC2626; background: white; }
     .btn-top.logout:hover { background: #FEF2F2; border-color: #FECACA; }
+    .update-watermark {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94A3B8;
+      opacity: 0.72;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      user-select: none;
+      pointer-events: none;
+      line-height: 1.2;
+      padding: 0 2px;
+    }
     .btn-top.admin { color: #B45309; background: #FFFBEB; border-color: #FDE68A; }
     .notif-badge { display: none; position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #EF4444; color: #fff; font-size: 10px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px #fff; }
     .notif-badge.show { display: inline-block; }
@@ -539,6 +551,7 @@
         <button type="button" class="btn-top" id="btn-inquiry" onclick="openInquiryModal()">문의하기<span class="notif-badge" id="inquiry-badge">0</span></button>
         <button type="button" class="btn-top pc-only" onclick="exportExcel()">엑셀 내보내기</button>
         <span id="display-user-id" class="user-badge">로그인: -</span>
+        <span id="update-watermark" class="update-watermark" aria-hidden="true"></span>
         <button type="button" class="btn-top logout" onclick="handleLogout()">로그아웃</button>
       </div>
     </div>
@@ -786,6 +799,10 @@
     // ★★★ 필수 수정: 앱스 크립트 URL 넣는 곳 ★★★
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyvASTy80Q8aOdD9eYkKnTwLi7dwx6GazU1TqwLEvvRap3yk6HJQxREQyLLo8DXNmvM/exec";
 
+    // ★ 업데이트할 때마다 이 문구만 바꾸면 로그아웃 옆 워터마크에 표시됩니다
+    // 예: '11월10일 업데이트 완료' / '11월15일 업데이트 완료'
+    const APP_UPDATE_NOTE = '11월10일 업데이트 완료';
+
     let appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } }; 
     let currentKey = ''; 
     let isSignupMode = false;
@@ -804,7 +821,15 @@
     let autoSaveTimer = null;
     let isCloudSaving = false;  
 
+    function applyUpdateWatermark() {
+      const el = document.getElementById('update-watermark');
+      if (!el) return;
+      el.textContent = APP_UPDATE_NOTE || '';
+      el.style.display = APP_UPDATE_NOTE ? '' : 'none';
+    }
+
     window.onload = () => {
+      applyUpdateWatermark();
       initYearDropdown();
       setCurrentPeriod();
       buildMonthlyTableHeaders();
