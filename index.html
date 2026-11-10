@@ -937,20 +937,28 @@
                 currentUserName = res.name || id;
                 
                 if (res.appData && res.appData !== "") {
-                    let cleanData = res.appData.replace(/합계:\s*<span/g, '<span');
-                    appData = JSON.parse(cleanData);
-                    
-                    let isOldVersion = false;
-                    for (let key in appData.drafts) {
-                        if (!appData.drafts[key].includes('최종잔고') && !appData.drafts[key].includes('기존 통장잔고')) {
-                            isOldVersion = true;
-                            break;
+                    try {
+                        let cleanData = res.appData.replace(/합계:\s*<span/g, '<span');
+                        appData = JSON.parse(cleanData);
+                        if (!appData.drafts) appData.drafts = {};
+                        if (!appData.snapshots) appData.snapshots = {};
+                        if (!appData.summary) appData.summary = {};
+                        if (!appData.wallet) appData.wallet = { base: 0, target: 300000000 };
+                        // 예전에 drafts만 비우던 로직 제거: 기존 사용자 기록 절대 삭제하지 않음
+                        // snapshots에만 있는 월 데이터는 drafts로 복구
+                        for (let key in appData.snapshots) {
+                            if (appData.snapshots[key] && !appData.drafts[key]) {
+                                appData.drafts[key] = appData.snapshots[key];
+                            }
                         }
-                    }
-                    if (isOldVersion) {
-                        appData.drafts = {}; 
-                        appData.template = null;
-                        saveGlobalData();
+                        localStorage.setItem('finance_data_' + currentUserId, JSON.stringify(appData));
+                    } catch (parseErr) {
+                        let localData = localStorage.getItem('finance_data_' + currentUserId);
+                        if (localData) {
+                            appData = JSON.parse(localData.replace(/합계:\s*<span/g, '<span'));
+                        } else {
+                            appData = { drafts: {}, snapshots: {}, summary: {}, template: null, wallet: { base: 0, target: 300000000 } };
+                        }
                     }
                 } else {
                     let localData = localStorage.getItem('finance_data_' + currentUserId);
@@ -991,8 +999,8 @@
       if (inqBtn) inqBtn.classList.toggle('admin', isAdmin);
     }
 
-    function handleLogout() {
-      saveGlobalData(); 
+    async function handleLogout() {
+      try { await saveGlobalData(true); } catch (e) {}
       currentUserId = '';
       currentUserName = '';
       isAdmin = false;
@@ -1532,18 +1540,81 @@
       });
     }
 
-    function saveGlobalData() {
-      if (!currentUserId) return;
-      appData.wallet.target = parseInt(document.getElementById('target-amount').value.replace(/,/g, '')) || 0;
-      localStorage.setItem('finance_data_' + currentUserId, JSON.stringify(appData));
+    function prepareAppDataForSave() {
+      const targetEl = document.getElementById('target-amount');
+      if (targetEl) {
+        appData.wallet.target = parseInt(targetEl.value.replace(/,/g, '')) || 0;
+      }
+      return JSON.parse(JSON.stringify(appData));
+    }
+
+    function postSaveData(userId, dataToSave) {
+      return fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: "saveData", id: userId, appData: dataToSave })
+      }).then(async (response) => {
+        const res = await response.json();
+        if (!res || res.success === false) {
+          throw new Error((res && res.message) || '클라우드 저장 실패');
+        }
+        return res;
+      });
+    }
+
+    /** immediate=true 이면 2초 대기 없이 즉시 구글시트에 저장 (저장하기/종료 시) */
+    function saveGlobalData(immediate) {
+      if (!currentUserId) return Promise.resolve(false);
+      const userId = currentUserId;
+      const dataToSave = prepareAppDataForSave();
+      localStorage.setItem('finance_data_' + userId, JSON.stringify(dataToSave));
 
       clearTimeout(cloudSaveTimeout);
-      cloudSaveTimeout = setTimeout(() => {
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: "saveData", id: currentUserId, appData: appData })
-        }).catch(e => console.log("Cloud sync err"));
-      }, 2000);
+      cloudSaveTimeout = null;
+
+      if (immediate) {
+        return postSaveData(userId, dataToSave).catch((e) => {
+          console.log("Cloud sync err", e);
+          throw e;
+        });
+      }
+
+      return new Promise((resolve) => {
+        cloudSaveTimeout = setTimeout(() => {
+          cloudSaveTimeout = null;
+          postSaveData(userId, dataToSave)
+            .then(resolve)
+            .catch((e) => { console.log("Cloud sync err", e); resolve(false); });
+        }, 800);
+      });
     }
+
+    // 창을 닫기 직전 대기 중인 저장을 즉시 밀어 넣음 (EXE 종료 시 유실 방지)
+    window.addEventListener('beforeunload', () => {
+      if (!currentUserId) return;
+      try {
+        if (currentKey) {
+          syncDOMValues();
+          appData.drafts[currentKey] = getCleanTableHtml();
+        }
+        const userId = currentUserId;
+        const dataToSave = prepareAppDataForSave();
+        localStorage.setItem('finance_data_' + userId, JSON.stringify(dataToSave));
+        clearTimeout(cloudSaveTimeout);
+        cloudSaveTimeout = null;
+        const body = JSON.stringify({ action: "saveData", id: userId, appData: dataToSave });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(GAS_URL, new Blob([body], { type: 'text/plain;charset=utf-8' }));
+        } else {
+          fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: body,
+            keepalive: true
+          }).catch(() => {});
+        }
+      } catch (e) {}
+    });
 
     let currentFindIdForPw = '';
 
@@ -1691,6 +1762,9 @@
         const w = document.getElementById('table-wrapper'); 
         if(appData.drafts[currentKey]) { 
             w.innerHTML = appData.drafts[currentKey]; 
+        } else if(appData.snapshots && appData.snapshots[currentKey]) {
+            w.innerHTML = appData.snapshots[currentKey];
+            appData.drafts[currentKey] = appData.snapshots[currentKey];
         } else if(appData.template) {
             w.innerHTML = appData.template;
         } else { 
@@ -1860,20 +1934,28 @@
 
     function deleteSelectedRows() { const cbs = document.querySelectorAll('#table-wrapper .row-checkbox'); let del = []; cbs.forEach(cb => { if(cb.checked) del.push(cb.closest('.sub-item')); }); if(del.length === 0) { showAlert('안내', '제거하실 항목의 좌측 체크박스를 먼저 선택해 주세요.', false); return; } const subs = document.querySelectorAll('#table-wrapper .sub-item'); if(subs.length - del.length < 1) { showAlert('경고', '최소 1개의 항목은 남아있어야 합니다.', false); return; } del.forEach(item => item.remove()); updateRowNumbers(); checkRatios(); distributeIncome(); scheduleFitMobileTables(); }
     function updateRowNumbers() { document.querySelectorAll('#table-wrapper .sub-item').forEach((item, idx) => { item.querySelector('.row-no').innerText = idx + 2; }); saveDraft(); }
-    function saveMonthlyData() {
+    async function saveMonthlyData() {
       syncDOMValues();
       const y = document.getElementById('select-year').value, m = document.getElementById('select-month').value;
       const k = `${y}-${m}`;
-      appData.snapshots[k] = getCleanTableHtml();
+      const html = getCleanTableHtml();
+      appData.snapshots[k] = html;
+      appData.drafts[k] = html;
+      currentKey = k;
       const ti = parseInt(document.querySelector('#table-wrapper .master-income').value.replace(/,/g, '')) || 0;
       let te = 0;
       document.querySelectorAll('#table-wrapper .sub-item .input-expense').forEach(i => { te += parseInt(i.value.replace(/,/g, '')) || 0; });
+      if (!appData.summary[y]) appData.summary[y] = { inc: Array(12).fill(0), exp: Array(12).fill(0) };
       appData.summary[y].inc[parseInt(m)-1] = ti;
       appData.summary[y].exp[parseInt(m)-1] = te;
-      saveGlobalData();
       loadSummaryTable(y);
       recalcFinalWallet();
-      showAlert('결산 저장 완료', `${y}년 ${m}월 표에 안전하게 기록되었습니다.`);
+      try {
+        await saveGlobalData(true);
+        showAlert('결산 저장 완료', `${y}년 ${m}월 표가 클라우드에 저장되었습니다.\n프로그램을 종료해도 다시 불러올 수 있습니다.`);
+      } catch (e) {
+        showAlert('저장 경고', '기기에 임시 저장은 되었습니다.\n인터넷 연결을 확인한 뒤 저장하기를 한 번 더 눌러 주세요.', false);
+      }
     }
     
     function openSnapshot(m) { 
@@ -1968,9 +2050,50 @@
         document.getElementById('wallet-modal').style.display = 'flex'; 
     }
 
-    function saveWalletModal() { appData.wallet.base = parseInt(document.getElementById('base-wallet-input').value.replace(/,/g, '')) || 0; saveGlobalData(); recalcFinalWallet(); closeModal('wallet-modal'); showAlert('변경 완료', '초기 자본 금액이 성공적으로 변경되었습니다.'); }
+    async function saveWalletModal() {
+      appData.wallet.base = parseInt(document.getElementById('base-wallet-input').value.replace(/,/g, '')) || 0;
+      recalcFinalWallet();
+      closeModal('wallet-modal');
+      try {
+        await saveGlobalData(true);
+        showAlert('변경 완료', '초기 자본 금액이 성공적으로 저장되었습니다.');
+      } catch (e) {
+        showAlert('저장 경고', '기기에 임시 저장은 되었습니다. 인터넷 연결 후 다시 저장해 주세요.', false);
+      }
+    }
     function openHistoryModal() { const g = document.getElementById('history-grid'); g.innerHTML = ''; const y = document.getElementById('select-year').value; const s = appData.summary[y]; for (let i = 0; i < 12; i++) { let ic = s.inc[i] ? s.inc[i].toLocaleString('ko-KR') : '0'; let ec = s.exp[i] ? s.exp[i].toLocaleString('ko-KR') : '0'; g.innerHTML += `<div class="history-card"><div class="history-month"><span>${i+1}월 결산</span></div><div class="field-header"><span>수입</span></div><input type="text" class="input-money h-inc" style="border:1px solid #E2E8F0; padding:6px; margin-bottom:10px;" value="${ic}" oninput="formatModalNumber(this)"><div class="field-header"><span>지출</span></div><input type="text" class="input-money h-exp" style="border:1px solid #E2E8F0; padding:6px;" value="${ec}" oninput="formatModalNumber(this)"></div>`; } document.getElementById('history-modal').style.display = 'flex'; }
-    function saveHistoryModal() { const y = document.getElementById('select-year').value; const is = document.querySelectorAll('.history-card .h-inc'); const es = document.querySelectorAll('.history-card .h-exp'); for (let i = 0; i < 12; i++) { let iv = parseInt(is[i].value.replace(/,/g, '')) || 0; let ev = parseInt(es[i].value.replace(/,/g, '')) || 0; appData.summary[y].inc[i] = iv; appData.summary[y].exp[i] = ev; if (iv === 0 && ev === 0) { const k = `${y}-${i + 1}`; delete appData.snapshots[k]; delete appData.drafts[k]; } } saveGlobalData(); loadSummaryTable(y); recalcFinalWallet(); const m = document.getElementById('select-month').value; if (!appData.drafts[`${y}-${m}`]) { document.getElementById('table-wrapper').innerHTML = document.getElementById('default-table-template').innerHTML; checkRatios(); distributeIncome(); } closeModal('history-modal'); scheduleFitMobileTables(); showAlert('저장 완료', '월별 요약 내역이 수정되었습니다.'); }
+    async function saveHistoryModal() {
+      const y = document.getElementById('select-year').value;
+      const is = document.querySelectorAll('.history-card .h-inc');
+      const es = document.querySelectorAll('.history-card .h-exp');
+      for (let i = 0; i < 12; i++) {
+        let iv = parseInt(is[i].value.replace(/,/g, '')) || 0;
+        let ev = parseInt(es[i].value.replace(/,/g, '')) || 0;
+        appData.summary[y].inc[i] = iv;
+        appData.summary[y].exp[i] = ev;
+        if (iv === 0 && ev === 0) {
+          const k = `${y}-${i + 1}`;
+          delete appData.snapshots[k];
+          delete appData.drafts[k];
+        }
+      }
+      loadSummaryTable(y);
+      recalcFinalWallet();
+      const m = document.getElementById('select-month').value;
+      if (!appData.drafts[`${y}-${m}`]) {
+        document.getElementById('table-wrapper').innerHTML = document.getElementById('default-table-template').innerHTML;
+        checkRatios();
+        distributeIncome();
+      }
+      closeModal('history-modal');
+      scheduleFitMobileTables();
+      try {
+        await saveGlobalData(true);
+        showAlert('저장 완료', '월별 요약 내역이 클라우드에 저장되었습니다.');
+      } catch (e) {
+        showAlert('저장 경고', '기기에 임시 저장은 되었습니다. 인터넷 연결 후 다시 저장해 주세요.', false);
+      }
+    }
   </script>
 </body>
 </html>
