@@ -114,48 +114,13 @@
     .auto-calc-box { background: #F1F5F9; padding: 12px; border-radius: 10px; display: block; width: 100%; text-align: right; }
     .table-actions {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
       gap: 10px;
       margin-bottom: 10px;
       flex-wrap: wrap;
     }
-    .carry-banner {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-      min-width: 220px;
-      background: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      border-radius: 10px;
-      padding: 8px 10px;
-    }
-    .carry-banner.is-auto {
-      background: #EFF6FF;
-      border-color: #BFDBFE;
-    }
-    .carry-banner.is-manual {
-      background: #F8FAFC;
-      border-color: #E2E8F0;
-    }
-    .carry-status-text {
-      font-size: 12px;
-      font-weight: 600;
-      color: #475569;
-      line-height: 1.35;
-    }
-    .carry-banner.is-auto .carry-status-text { color: #1D4ED8; }
-    .btn-carry-refresh {
-      background: white !important;
-      color: #334155 !important;
-      border: 1px solid #CBD5E1 !important;
-      padding: 6px 10px !important;
-      font-size: 11px !important;
-      white-space: nowrap;
-    }
-    .btn-carry-refresh:hover { background: #F1F5F9 !important; }
-    .table-action-right { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+    .table-action-right { display: flex; gap: 8px; flex-wrap: wrap; }
     .save-status {
       font-size: 12px;
       font-weight: 600;
@@ -581,10 +546,6 @@
     <div class="middle-section">
       <div class="main-table-panel">
         <div class="table-actions">
-          <div class="carry-banner" id="carry-banner">
-            <span class="carry-status-text" id="carry-status-text">달을 바꾸면 전달 최종잔고가 자동 반영됩니다</span>
-            <button type="button" class="btn-action btn-carry-refresh" onclick="loadPreviousMonthBalances(true)">다시 불러오기</button>
-          </div>
           <div class="table-action-right">
             <button class="btn-action" onclick="addRow()">+ 항목 추가</button>
             <button class="btn-action delete" onclick="deleteSelectedRows()">- 항목 제거</button>
@@ -1566,15 +1527,11 @@
 
       try {
         const result = await saveExcelWithPicker(filename, html);
-        if (result.mode === 'picker') {
-          showAlert('내보내기 완료', `선택한 위치에 저장되었습니다.\n파일명: ${result.name}`);
-        } else {
-          showAlert('내보내기 완료', `파일이 다운로드되었습니다.\n브라우저 기본 다운로드 폴더를 확인해 주세요.\n(Chrome/Edge에서는 위치 선택 창이 뜹니다.)`);
-        }
+        showAlert('내보내기 완료', '');
       } catch (err) {
         // 사용자가 저장 창에서 취소한 경우
         if (err && (err.name === 'AbortError' || err.name === 'NotAllowedError')) return;
-        showAlert('내보내기 실패', '파일 저장 중 오류가 발생했습니다.', false);
+        showAlert('내보내기 실패', '다시 시도해 주세요.', false);
       }
     }
 
@@ -1878,7 +1835,59 @@
       } catch(e) { showAlert('오류', '통신 오류 발생: 인터넷 연결을 확인해주세요.', false); }
     }
 
-    function showAlert(title, message, isSuccess = true) { document.getElementById('alert-icon').innerText = isSuccess ? '✅' : '⚠️'; document.getElementById('alert-title').innerText = title; document.getElementById('alert-title').style.color = isSuccess ? '#166534' : '#B91C1C'; document.getElementById('alert-message').innerText = message; document.getElementById('custom-alert').style.display = 'flex'; }
+    function cleanAlertMessage(message, isSuccess) {
+      let msg = message;
+      if (msg && typeof msg === 'object') {
+        msg = msg.message || '';
+      }
+      msg = String(msg == null ? '' : msg).trim();
+      if (!msg) return '';
+
+      // 실수로 JSON 전체가 들어온 경우 메시지 필드만 사용
+      if ((msg.startsWith('{') || msg.startsWith('[')) && msg.indexOf('"') !== -1) {
+        try {
+          const parsed = JSON.parse(msg);
+          msg = String((parsed && parsed.message) || '').trim();
+        } catch (e) {
+          msg = '';
+        }
+      }
+
+      // 성공 알림은 짧게: 상세/기술 문구 제거
+      if (isSuccess) {
+        const firstLine = msg.split(/\r?\n/)[0].trim();
+        if (!firstLine) return '';
+        if (/클라우드|미리 준비|앱스스크립트|배포|사유:|bytes|success/i.test(firstLine)) {
+          return '';
+        }
+        if (firstLine.length > 48) return '';
+        return firstLine;
+      }
+
+      // 실패 알림도 첫 줄만, 너무 긴 기술 문구는 축약
+      const errLine = msg.split(/\r?\n/)[0].trim();
+      if (!errLine) return '다시 시도해 주세요.';
+      if (/앱스스크립트|배포|사유:/i.test(msg)) return '잠시 후 다시 저장해 주세요.';
+      return errLine.length > 60 ? errLine.slice(0, 57) + '...' : errLine;
+    }
+
+    function showAlert(title, message, isSuccess = true) {
+      const ok = isSuccess !== false;
+      const cleanTitle = String(title || (ok ? '완료' : '안내')).trim();
+      const cleanMsg = cleanAlertMessage(message, ok);
+      document.getElementById('alert-icon').innerText = ok ? '✅' : '⚠️';
+      document.getElementById('alert-title').innerText = cleanTitle;
+      document.getElementById('alert-title').style.color = ok ? '#166534' : '#B91C1C';
+      const msgEl = document.getElementById('alert-message');
+      if (cleanMsg) {
+        msgEl.style.display = 'block';
+        msgEl.innerText = cleanMsg;
+      } else {
+        msgEl.style.display = 'none';
+        msgEl.innerText = '';
+      }
+      document.getElementById('custom-alert').style.display = 'flex';
+    }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function initYearDropdown() {
       const ys = document.getElementById('select-year');
@@ -1927,14 +1936,8 @@
       isDirty = false;
     }
 
-    function setCarryStatus(text, mode) {
-      const banner = document.getElementById('carry-banner');
-      const label = document.getElementById('carry-status-text');
-      if (label) label.textContent = text;
-      if (banner) {
-        banner.classList.remove('is-auto', 'is-manual');
-        if (mode) banner.classList.add(mode);
-      }
+    function setCarryStatus() {
+      // 자동 이월 UI는 제거됨 (백그라운드 자동 반영만 유지)
     }
 
     function getAdjacentMonth(y, m, delta) {
@@ -2325,26 +2328,18 @@
       appData.summary[y].inc[parseInt(m)-1] = ti;
       appData.summary[y].exp[parseInt(m)-1] = te;
 
-      const nextPrepared = prepareNextMonthDraft(y, m);
+      prepareNextMonthDraft(y, m);
       loadSummaryTable(y);
       recalcFinalWallet();
 
       try {
         await saveGlobalData(true);
         clearDirty();
-        const next = getAdjacentMonth(y, m, 1);
-        let msg = y + '년 ' + m + '월 표가 클라우드에 저장되었습니다.';
-        if (nextPrepared) msg += '\n' + next.label + ' 기존잔고도 미리 준비해 두었습니다.';
-        setSaveStatus('클라우드 저장 완료', 'ok');
-        showAlert('결산 저장 완료', msg);
+        setSaveStatus('저장 완료', 'ok');
+        showAlert('저장 완료', '');
       } catch (e) {
-        const detail = (e && e.message) ? e.message : '알 수 없는 오류';
-        setSaveStatus('클라우드 저장 실패 · 다시 저장해 주세요', 'err');
-        showAlert(
-          '저장 경고',
-          '기기에 임시 저장은 되었습니다.\n\n사유: ' + detail + '\n\n구글 앱스스크립트에 최신 Code.gs를 배포한 뒤\n저장하기를 한 번 더 눌러 주세요.',
-          false
-        );
+        setSaveStatus('저장 실패 · 다시 시도해 주세요', 'err');
+        showAlert('저장 실패', '다시 저장해 주세요.', false);
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '저장하기'; }
       }
@@ -2448,9 +2443,9 @@
       closeModal('wallet-modal');
       try {
         await saveGlobalData(true);
-        showAlert('변경 완료', '초기 자본 금액이 성공적으로 저장되었습니다.');
+        showAlert('변경 완료', '');
       } catch (e) {
-        showAlert('저장 경고', '기기에 임시 저장은 되었습니다. 인터넷 연결 후 다시 저장해 주세요.', false);
+        showAlert('저장 실패', '다시 저장해 주세요.', false);
       }
     }
     function openHistoryModal() { const g = document.getElementById('history-grid'); g.innerHTML = ''; const y = document.getElementById('select-year').value; const s = appData.summary[y]; for (let i = 0; i < 12; i++) { let ic = s.inc[i] ? s.inc[i].toLocaleString('ko-KR') : '0'; let ec = s.exp[i] ? s.exp[i].toLocaleString('ko-KR') : '0'; g.innerHTML += `<div class="history-card"><div class="history-month"><span>${i+1}월 결산</span></div><div class="field-header"><span>수입</span></div><input type="text" class="input-money h-inc" style="border:1px solid #E2E8F0; padding:6px; margin-bottom:10px;" value="${ic}" oninput="formatModalNumber(this)"><div class="field-header"><span>지출</span></div><input type="text" class="input-money h-exp" style="border:1px solid #E2E8F0; padding:6px;" value="${ec}" oninput="formatModalNumber(this)"></div>`; } document.getElementById('history-modal').style.display = 'flex'; }
@@ -2481,9 +2476,9 @@
       scheduleFitMobileTables();
       try {
         await saveGlobalData(true);
-        showAlert('저장 완료', '월별 요약 내역이 클라우드에 저장되었습니다.');
+        showAlert('저장 완료', '');
       } catch (e) {
-        showAlert('저장 경고', '기기에 임시 저장은 되었습니다. 인터넷 연결 후 다시 저장해 주세요.', false);
+        showAlert('저장 실패', '다시 저장해 주세요.', false);
       }
     }
   </script>
