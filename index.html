@@ -839,7 +839,9 @@
     let badgePollTimer = null;
     let isDirty = false;
     let suppressDirty = false;
-    let balanceEditBound = false;  
+    let balanceEditBound = false;
+    let autoSaveTimer = null;
+    let isCloudSaving = false;  
 
     window.onload = () => {
       initYearDropdown();
@@ -1058,6 +1060,8 @@
                 switchMonth();
                 refreshInquiryBadge();
                 startBadgePolling();
+                startAutoCloudSave();
+                setSaveStatus('로그인됨 · 변경 시 자동 저장됩니다', 'ok');
             }
         } else { 
             showAlert(isSignupMode ? '가입 실패' : '로그인 실패', res.message, false); 
@@ -1079,6 +1083,7 @@
 
     async function handleLogout() {
       try { await saveGlobalData(true); } catch (e) {}
+      stopAutoCloudSave();
       currentUserId = '';
       currentUserName = '';
       isAdmin = false;
@@ -1618,12 +1623,42 @@
       });
     }
 
+    function minifyHtmlForSave(html) {
+      return String(html || '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/>\s+</g, '><')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    /** 클라우드 전송용 압축: 동일 drafts/snapshots 중복 제거 + HTML 공백 축소 */
+    function compactAppDataForCloud(source) {
+      const compact = JSON.parse(JSON.stringify(source || {}));
+      if (!compact.drafts) compact.drafts = {};
+      if (!compact.snapshots) compact.snapshots = {};
+      if (!compact.summary) compact.summary = {};
+      if (!compact.wallet) compact.wallet = { base: 0, target: 300000000 };
+
+      Object.keys(compact.snapshots).forEach((key) => {
+        compact.snapshots[key] = minifyHtmlForSave(compact.snapshots[key]);
+      });
+      Object.keys(compact.drafts).forEach((key) => {
+        compact.drafts[key] = minifyHtmlForSave(compact.drafts[key]);
+        if (compact.snapshots[key] && compact.drafts[key] === compact.snapshots[key]) {
+          delete compact.drafts[key];
+        }
+      });
+      if (compact.template) compact.template = minifyHtmlForSave(compact.template);
+      return compact;
+    }
+
     function prepareAppDataForSave() {
       const targetEl = document.getElementById('target-amount');
       if (targetEl) {
+        if (!appData.wallet) appData.wallet = { base: 0, target: 300000000 };
         appData.wallet.target = parseInt(targetEl.value.replace(/,/g, '')) || 0;
       }
-      return JSON.parse(JSON.stringify(appData));
+      return compactAppDataForCloud(appData);
     }
 
     function postSaveData(userId, dataToSave) {
@@ -1632,7 +1667,13 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: "saveData", id: userId, appData: dataToSave })
       }).then(async (response) => {
-        const res = await response.json();
+        const text = await response.text();
+        let res;
+        try {
+          res = JSON.parse(text);
+        } catch (e) {
+          throw new Error('서버 응답을 읽지 못했습니다. 앱스스크립트 배포를 확인해 주세요.');
+        }
         if (!res || res.success === false) {
           throw new Error((res && res.message) || '클라우드 저장 실패');
         }
@@ -1640,10 +1681,21 @@
       });
     }
 
-    /** immediate=true 이면 2초 대기 없이 즉시 구글시트에 저장 (저장하기/종료 시) */
+    function flushLocalDraftNow() {
+      if (!currentUserId) return;
+      try {
+        if (currentKey) {
+          syncDOMValues();
+          appData.drafts[currentKey] = getCleanTableHtml();
+        }
+      } catch (e) {}
+    }
+
+    /** immediate=true 이면 대기 없이 즉시 구글시트에 저장 */
     function saveGlobalData(immediate) {
       if (!currentUserId) return Promise.resolve(false);
       const userId = currentUserId;
+      flushLocalDraftNow();
       const dataToSave = prepareAppDataForSave();
       localStorage.setItem('finance_data_' + userId, JSON.stringify(dataToSave));
 
@@ -1651,47 +1703,91 @@
       cloudSaveTimeout = null;
 
       if (immediate) {
-        return postSaveData(userId, dataToSave).catch((e) => {
-          console.log("Cloud sync err", e);
-          throw e;
-        });
+        if (isCloudSaving) {
+          return postSaveData(userId, dataToSave).catch((e) => {
+            console.log('Cloud sync err', e);
+            throw e;
+          });
+        }
+        isCloudSaving = true;
+        return postSaveData(userId, dataToSave)
+          .catch((e) => {
+            console.log('Cloud sync err', e);
+            throw e;
+          })
+          .finally(() => { isCloudSaving = false; });
       }
 
       return new Promise((resolve) => {
         cloudSaveTimeout = setTimeout(() => {
           cloudSaveTimeout = null;
+          if (isCloudSaving) { resolve(false); return; }
+          isCloudSaving = true;
           postSaveData(userId, dataToSave)
-            .then(resolve)
-            .catch((e) => { console.log("Cloud sync err", e); resolve(false); });
-        }, 800);
+            .then((res) => {
+              clearDirty();
+              setSaveStatus('자동 클라우드 저장 완료', 'ok');
+              resolve(res);
+            })
+            .catch((e) => {
+              console.log('Cloud sync err', e);
+              setSaveStatus('자동 저장 실패 · 저장하기를 눌러 주세요', 'err');
+              resolve(false);
+            })
+            .finally(() => { isCloudSaving = false; });
+        }, 1200);
       });
     }
 
-    // 창을 닫기 직전 대기 중인 저장을 즉시 밀어 넣음 (EXE 종료 시 유실 방지)
-    window.addEventListener('beforeunload', () => {
+    function flushCloudSaveBestEffort() {
       if (!currentUserId) return;
       try {
-        if (currentKey) {
-          syncDOMValues();
-          appData.drafts[currentKey] = getCleanTableHtml();
-        }
+        flushLocalDraftNow();
         const userId = currentUserId;
         const dataToSave = prepareAppDataForSave();
         localStorage.setItem('finance_data_' + userId, JSON.stringify(dataToSave));
         clearTimeout(cloudSaveTimeout);
         cloudSaveTimeout = null;
-        const body = JSON.stringify({ action: "saveData", id: userId, appData: dataToSave });
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon(GAS_URL, new Blob([body], { type: 'text/plain;charset=utf-8' }));
-        } else {
-          fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: body,
-            keepalive: true
-          }).catch(() => {});
-        }
+        const body = JSON.stringify({ action: 'saveData', id: userId, appData: dataToSave });
+        // GAS는 sendBeacon보다 keepalive fetch가 더 안정적
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: body,
+          keepalive: true
+        }).catch(() => {});
+        try {
+          navigator.sendBeacon && navigator.sendBeacon(GAS_URL, new Blob([body], { type: 'text/plain;charset=utf-8' }));
+        } catch (e) {}
       } catch (e) {}
+    }
+
+    function startAutoCloudSave() {
+      stopAutoCloudSave();
+      autoSaveTimer = setInterval(() => {
+        if (!currentUserId || !isDirty || isCloudSaving) return;
+        saveGlobalData(true).then(() => {
+          clearDirty();
+          setSaveStatus('자동 클라우드 저장 완료', 'ok');
+        }).catch((e) => {
+          setSaveStatus('자동 저장 실패 · 저장하기를 눌러 주세요', 'err');
+          console.log(e);
+        });
+      }, 15000);
+    }
+
+    function stopAutoCloudSave() {
+      if (autoSaveTimer) {
+        clearInterval(autoSaveTimer);
+        autoSaveTimer = null;
+      }
+    }
+
+    // 창을 닫거나 숨길 때 자동 클라우드 저장
+    window.addEventListener('pagehide', flushCloudSaveBestEffort);
+    window.addEventListener('beforeunload', flushCloudSaveBestEffort);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') flushCloudSaveBestEffort();
     });
 
     let currentFindIdForPw = '';
@@ -2242,8 +2338,13 @@
         setSaveStatus('클라우드 저장 완료', 'ok');
         showAlert('결산 저장 완료', msg);
       } catch (e) {
+        const detail = (e && e.message) ? e.message : '알 수 없는 오류';
         setSaveStatus('클라우드 저장 실패 · 다시 저장해 주세요', 'err');
-        showAlert('저장 경고', '기기에 임시 저장은 되었습니다.\n인터넷 연결을 확인한 뒤 저장하기를 한 번 더 눌러 주세요.', false);
+        showAlert(
+          '저장 경고',
+          '기기에 임시 저장은 되었습니다.\n\n사유: ' + detail + '\n\n구글 앱스스크립트에 최신 Code.gs를 배포한 뒤\n저장하기를 한 번 더 눌러 주세요.',
+          false
+        );
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '저장하기'; }
       }
