@@ -1920,12 +1920,12 @@
         setCarryStatus('전달 최종잔고를 찾지 못했습니다', 'is-manual');
         return { ok: false, reason: 'no-finals' };
       }
-      if (!force && !areCurrentBalancesEmpty()) {
-        setCarryStatus('이번 달 기존잔고를 유지 중입니다 · 필요하면 다시 불러오기', 'is-manual');
-        return { ok: false, reason: 'already-filled' };
-      }
       const applied = applyBalancesToCurrent(finals, { overwrite: !!force, markAuto: true });
       if (!applied) {
+        if (!force && !areCurrentBalancesEmpty()) {
+          setCarryStatus('이번 달 기존잔고를 유지 중입니다 · 필요하면 다시 불러오기', 'is-manual');
+          return { ok: false, reason: 'already-filled' };
+        }
         setCarryStatus('반영할 잔고가 없습니다', 'is-manual');
         return { ok: false, reason: 'none-applied' };
       }
